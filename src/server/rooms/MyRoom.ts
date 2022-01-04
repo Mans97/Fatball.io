@@ -6,10 +6,10 @@ export class MyRoom extends Room<MyRoomState> {
   onCreate (options: any) {
     this.setState(new MyRoomState());
 
-    this.onMessage("type", (client, message) => {
-      //
-      // handle "type" message
-      //
+    this.onMessage("keydown", (client, message) => { //keydown è il nome del message che arriva al server 
+        this.broadcast('keydown', message, { //lo invio a tutti
+          except: client //tranne che a me stesso
+        }) 
     });
 
   }

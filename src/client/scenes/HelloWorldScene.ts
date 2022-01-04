@@ -1,39 +1,43 @@
 import Phaser from 'phaser'
+import * as Colyseus from 'colyseus.js'
 
 export default class HelloWorldScene extends Phaser.Scene
 {
+    private client: Colyseus.Client
 	constructor()
 	{
 		super('hello-world')
 	}
 
-	preload()
+    init()
     {
-        this.load.setBaseURL('http://labs.phaser.io')
-
-        this.load.image('sky', 'assets/skies/space3.png')
-        this.load.image('logo', 'assets/sprites/phaser3-logo.png')
-        this.load.image('red', 'assets/particles/red.png')
+        this.client = new Colyseus.Client('ws://localhost:2567')
     }
 
-    create()
+	preload()
     {
-        this.add.image(400, 300, 'sky')
+        //this.load.setBaseURL('http://labs.phaser.io')
+        //this.load.image('sky', 'assets/skies/space3.png')
 
-        const particles = this.add.particles('red')
 
-        const emitter = particles.createEmitter({
-            speed: 100,
-            scale: { start: 1, end: 0 },
-            blendMode: 'ADD'
+        
+    }
+
+    async create()
+    {
+        //Join room
+        const room = await this.client.joinOrCreate('my_room') //if there is one in the room, I have to use joinOrCreate()
+
+        console.log(room.sessionId) //id of connectedplayes, esiste anche room.name
+
+        //message coming from the server
+        room.onMessage('keydown', (message) => {
+            console.log(message)
         })
 
-        const logo = this.physics.add.image(400, 100, 'logo')
+        this.input.keyboard.on('keydown', (evt: KeyboardEvent) =>{
+            room.send('keydown', evt.key) //lo mando a Colysius server
+        })
 
-        logo.setVelocity(100, 200)
-        logo.setBounce(1, 1)
-        logo.setCollideWorldBounds(true)
-
-        emitter.startFollow(logo)
     }
 }
