@@ -1,5 +1,5 @@
 # Fatball.io | Distributed System Project
-Game based on a Django web service with Redis and Celery for real-time management. 
+Game based on a Node web service with Redis and Celery for real-time management. 
 
 
 # Start the project
