@@ -20,7 +20,7 @@ const gameServer = new Server({
 });
 
 app.get('/', (req, res) => {
-    res.send('Hello x!')
+    res.send('Hai sbagliato... go to: http://127.0.0.1:2567/colyseus/#/')
 })
 
 gameServer.define('my_room', MyRoom);
