@@ -8,7 +8,7 @@ import { GameRoom } from './rooms/GameRoom'
 import path from 'path'
 
 
-const port = Number(process.env.port || 2567);
+const port = Number(process.env.port || 8000);
 
 const app = express();
 app.use(cors());
@@ -22,13 +22,18 @@ const gameServer = new Server({
 });
 
 app.get('/game', (req, res) => {
-    //res.send('Hai sbagliato... go to: http://127.0.0.1:2567/colyseus/#/')
     res.sendFile(path.join(__dirname, '../client/game.html'));
 })
 
 gameServer.define('game_room', GameRoom);
 
 app.use('/colyseus', monitor())
+
+app.get('/', (req,res)=>{
+    res.sendFile(path.join(__dirname, '../client/index.html'))
+})
+
+
 
 gameServer.listen(port)
 
