@@ -4,7 +4,7 @@ import { Server } from "colyseus";
 import express from "express";
 import cors from 'cors'
 import { monitor } from "@colyseus/monitor";
-import { MyRoom } from './rooms/MyRoom'
+import { GameRoom } from './rooms/GameRoom'
 
 
 const port = Number(process.env.port || 2567);
@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
     res.send('Hai sbagliato... go to: http://127.0.0.1:2567/colyseus/#/')
 })
 
-gameServer.define('my_room', MyRoom);
+gameServer.define('game_room', GameRoom);
 
 app.use('/colyseus', monitor())
 
