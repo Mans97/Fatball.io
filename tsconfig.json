@@ -10,8 +10,9 @@
 	  "experimentalDecorators": true,
 	  "skipLibCheck": true,
 	  "forceConsistentCasingInFileNames": true
+
 	},
 	"include": [
-	  "src",
+	  "src"
 	]
   }
