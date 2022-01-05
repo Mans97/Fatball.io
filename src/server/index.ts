@@ -8,11 +8,12 @@ import { GameRoom } from './rooms/GameRoom'
 import path from 'path'
 
 
-const port = Number(process.env.port || 8000);
-
+const port = Number(process.env.port || 2567);
+const host = 'localhost'
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/static', express.static('public'))
 app.use("/static",express.static(__dirname+'../client/static'))
 
 //app.use('/static', express.static('public'))
@@ -22,7 +23,7 @@ const gameServer = new Server({
 });
 
 app.get('/game', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/game.html'));
+    res.redirect("ws://" + host + ":8000")
 })
 
 gameServer.define('game_room', GameRoom);
