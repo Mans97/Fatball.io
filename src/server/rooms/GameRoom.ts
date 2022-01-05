@@ -1,15 +1,14 @@
 import { Room, Client, RedisPresence } from "colyseus";
 //import { State } from "./schema/State";
 import { Schema, type, MapSchema } from "@colyseus/schema";
+import { Entity } from "./schema/Entity";
 
 
-
-export class Player extends Schema {
-  @type("number")
-  x = Math.floor(Math.random() * 400);
-
-  @type("number")
-  y = Math.floor(Math.random() * 400);
+export class Player extends Entity {
+  constructor() {
+      super();
+      this.radius = 100;
+  }
 }
 
 export class State extends Schema {
@@ -19,7 +18,11 @@ export class State extends Schema {
   something = "This attribute won't be sent to the client-side";
 
   createPlayer(sessionId: string) {
-      this.players.set(sessionId, new Player());
+      //oppure: this.players.set(sessionId, new Player());
+      this.players.set(sessionId, new Player().assign({
+        x: Math.random() * 200,
+        y: Math.random() * 200
+      }));
   }
 
   removePlayer(sessionId: string) {
@@ -27,34 +30,36 @@ export class State extends Schema {
   }
 
   movePlayer (sessionId: string, movement: any) {
-      if (movement.x) {
-          this.players.get(sessionId).x += movement.x * 10;
-
-      } else if (movement.y) {
-          this.players.get(sessionId).y += movement.y * 10;
-      }
+    if (movement.x) {
+      this.players.get(sessionId).x += movement.x * 10;
+    } else if (movement.y) {
+      console.log(movement)
+      this.players.get(sessionId).y += movement.y * 10;
+    }
   }
 }
+
+const players:any = {}
 
 export class GameRoom extends Room<State> {
 
   onCreate (options: any) {
     this.setState(new State());
 
-    this.onMessage("keydown", (client, message) => { //keydown è il nome del message che arriva al server 
+    /*this.onMessage("keydown", (client, message) => { //keydown è il nome del message che arriva al server 
         this.broadcast('keydown', message, { //lo invio a tutti
           except: client //tranne che a me stesso
         }) 
-    });
+    });*/
 
 
     this.onMessage("move", (client, data) => {
         console.log("StateHandlerRoom received message from", client.sessionId, ":", data);
         this.state.movePlayer(client.sessionId, data);
+        this.broadcast('move', data, { except: client }) 
     });
 
   }
-
 
 
 
@@ -63,6 +68,7 @@ export class GameRoom extends Room<State> {
     console.log(options.name, " joined!");
     //create the player
     this.state.createPlayer(client.sessionId);
+  
   
   }
 
