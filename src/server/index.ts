@@ -21,7 +21,7 @@ const gameServer = new Server({
     server,
 });
 
-app.get('/', (req, res) => {
+app.get('/game', (req, res) => {
     //res.send('Hai sbagliato... go to: http://127.0.0.1:2567/colyseus/#/')
     res.sendFile(path.join(__dirname, '../client/game.html'));
 })
