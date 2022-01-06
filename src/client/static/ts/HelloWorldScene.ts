@@ -6,8 +6,8 @@ import { State } from '../../../server/rooms/GameRoom'
 export default class HelloWorldScene extends Phaser.Scene
 {
     declare private cursors:any 
-    players: { [id: string]: Phaser.Geom.Circle } = {}
-    currentPlayer: Phaser.Geom.Circle
+    players: { [id: string]: Phaser.GameObjects.Arc } = {}
+    currentPlayer: Phaser.GameObjects.Arc
     declare private circle_object:any
     private client: Colyseus.Client
     room: any
@@ -41,12 +41,15 @@ export default class HelloWorldScene extends Phaser.Scene
             
             //create the player
             //this.circle_object = this.add.circle(0, 0, 50, 0xaaaaaa).setStrokeStyle(3, 0xeaa66aa);
+            //console.log(typeof "this.circle_object")
             //this.players = this.physics.add.existing(this.circle_object);
 
 
-            var graphics = this.add.graphics({ fillStyle: { color: 0xff0000}})
-            this.players[sessionId] = new Phaser.Geom.Circle(player.x, player.y, player.radius)
-            graphics.fillCircleShape(this.players[sessionId])
+            //var graphics = this.add.graphics({ fillStyle: { color: 0xff0000}})
+            console.log("RADIUS coming from ROOM: ", player.radius)
+            this.players[sessionId] = new Phaser.GameObjects.Arc(this, player.x, player.y, player.radius, 0xaaaaaa)
+            this.players[sessionId] = this.add.circle(player.x, player.y, player.radius, 0xaaaaaa).setStrokeStyle(3, 0xeaa66aa)
+            //graphics.fillCircleShape(this.players[sessionId])
             //NON VA this.physics.add.existing(graphics)
 
             //NON VAthis.players[sessionId] = this.physics.add.sprite(300, 100, 'dude')
@@ -56,10 +59,15 @@ export default class HelloWorldScene extends Phaser.Scene
             //this.players2[sessionId].setCollideWorldBounds(true);
             //this.cameras.main.startFollow(this.players[sessionId])
 
-
-            this.currentPlayer = this.players[sessionId]
+            if (sessionId === this.room.sessionId) {
+                this.currentPlayer = this.add.circle(player.x, player.y, player.radius, 0xaaaaaa).setStrokeStyle(3, 0xeaa66aa)
+                console.log("sono qui con il giocatore corrente che è: ", this.currentPlayer)
+                this.cameras.main.startFollow(this.currentPlayer)
+                //follow player with the camera
+            }
+            //this.currentPlayer = this.players[sessionId]
             //graphics.fillCircleShape(this.currentPlayer)
-            //this.cameras.main.startFollow(this.currentPlayer)
+            //
         
         }
         
@@ -83,14 +91,6 @@ export default class HelloWorldScene extends Phaser.Scene
             this.room.send('keydown', evt.key) //lo mando a Colysius server
         })*/
 
-        this.room.onMessage("move", (data: any) => {
-            console.log("\t MOVED RECEIVED: message received from server");
-            //console.log("pony", data);
-            for(let id in data){
-                console.log("id:", id, " data: ", data)
-            }
-        });
-
 
         /**
          * 
@@ -106,18 +106,37 @@ export default class HelloWorldScene extends Phaser.Scene
         this.cursors = this.input.keyboard.addKeys("W,A,S,D");
         console.log(this.cursors)
 
+
+        this.room.onMessage("move", (data: any) => {
+            console.log("\t MOVED RECEIVED: message received from server");
+            //console.log("pony", data);
+            for(let id in this.players){
+                //console.log("id:", id, " data: ", data)
+                console.log("VECCHIA POSIZIONE del giocatore ", id," è : ", this.players[id].x, " E ", this.players[id].y)
+                this.players[id].x = this.room.state.players[id].x
+                this.players[id].y = this.room.state.players[id].y
+                console.log("\t\NUOVA POSIZIONE: ", id," è : ", this.room.state.players[id].x, " E ", this.room.state.players[id].y)
+
+                
+            }
+        });
+        console.log("sessione room", this.room.sessionId)
+
         
 
     }
 
     async update(){
-        
         if(this.cursors){
             if( this.cursors.D.isDown) {
-                this.room.send("move", { y: +5 });
-                this.currentPlayer.x += 5;
+                this.room.send("move", { x: +1 });
+                this.currentPlayer.x += 1;
             }
         }
+
+       
+ 
+
         
         /*if(this.cursors){
             if( this.cursors.D.isDown) {
