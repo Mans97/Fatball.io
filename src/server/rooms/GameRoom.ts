@@ -41,7 +41,7 @@ export class State extends Schema {
   }
 }
 
-const players:any = {}
+//const players:any = {}
 
 export class GameRoom extends Room<State> {
 
@@ -58,9 +58,11 @@ export class GameRoom extends Room<State> {
     this.onMessage("move", (client, data) => {
         console.log("StateHandlerRoom received message from", client.sessionId, ":", data);
         //this.state.movePlayer(client.sessionId, data);
-        const player = this.state.players[client.sessionId]
+        //console.log("this.state.players ",this.state.players.get(client.sessionId))
+        //const player = this.state.players.get(client.sessionId)
+        this.state.movePlayer(client.sessionId, data);
         //this.broadcast('move', data) 
-        players.
+        
     });
 
   }

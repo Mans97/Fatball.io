@@ -64,6 +64,7 @@ export default class HelloWorldScene extends Phaser.Scene
             //this.players[sessionId].setCollideWorldBounds(true);
 
             if (sessionId === this.room.sessionId) {
+                //current player is need to bind the camera to your current player (the player that you use in the game)
                 this.currentPlayer = style_player
                 console.log("CIAO CLIENT, il tuo giocatore è: ", this.currentPlayer)
                 //follow player with the camera
@@ -73,7 +74,16 @@ export default class HelloWorldScene extends Phaser.Scene
 
               
             player.onChange = (changes: any) => {
-                console.log("\t\t----- è cambiato qualcosa")
+                console.log("\t\t----- è cambiato qualcosa", changes)
+                for(let id in this.players){
+                    //console.log("id:", id, " data: ", data)
+                    console.log("VECCHIA POSIZIONE del giocatore ", id," è : ", this.players[id].x, " E ", this.players[id].y)
+                    this.players[id].x = this.room.state.players[id].x
+                    this.players[id].y = this.room.state.players[id].y
+                    console.log("\t\NUOVA POSIZIONE: ", id," è : ", this.room.state.players[id].x, " E ", this.room.state.players[id].y)
+    
+                    
+                }
             }
 
 
@@ -102,21 +112,7 @@ export default class HelloWorldScene extends Phaser.Scene
         })*/
 
 
-      
-        this.room.onMessage("move", (data: any) => {
-            console.log("\t MOVED RECEIVED: message received from server");
-            //console.log("pony", data);
-            for(let id in this.players){
-                //console.log("id:", id, " data: ", data)
-                console.log("VECCHIA POSIZIONE del giocatore ", id," è : ", this.players[id].x, " E ", this.players[id].y)
-                this.players[id].x = this.room.state.players[id].x
-                this.players[id].y = this.room.state.players[id].y
-                console.log("\t\NUOVA POSIZIONE: ", id," è : ", this.room.state.players[id].x, " E ", this.room.state.players[id].y)
-
-                
-            }
-        });
-        console.log("sessione room", this.room.sessionId)
+    
 
         
 
