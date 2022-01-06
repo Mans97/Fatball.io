@@ -32,12 +32,12 @@ export class State extends Schema {
   movePlayer (sessionId: string, movement: any) {
     console.log("MOVEMENT: ", movement)
     if (movement.x) {
-      this.players.get(sessionId).x += movement.x; //vecchia versione era: movement.x * 10
+      this.players.get(sessionId).x += movement.x * 1; //vecchia versione era: movement.x * 10
       //console.log("movement.y * 10 ", movement.x * 10) 
 
     } else if (movement.y) {
       console.log(movement)
-      this.players.get(sessionId).y += movement.y;  //vecchia versione era: movement.y * 10
+      this.players.get(sessionId).y += movement.y * 1;  //vecchia versione era: movement.y * 10
     }
   }
 }

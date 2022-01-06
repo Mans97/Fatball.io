@@ -46,13 +46,11 @@ export default class HelloWorldScene extends Phaser.Scene
 
 
             //var graphics = this.add.graphics({ fillStyle: { color: 0xff0000}})
-            console.log("RADIUS coming from ROOM: ", player.radius)
-            this.players[sessionId] = new Phaser.GameObjects.Arc(this, player.x, player.y, player.radius, 0xaaaaaa)
-            this.players[sessionId] = this.add.circle(player.x, player.y, player.radius, 0xaaaaaa).setStrokeStyle(3, 0xeaa66aa)
+            const style_player = this.add.circle(player.x, player.y, player.radius, 0xaaaaaa).setStrokeStyle(3, 0xeaa66aa)
+            this.players[sessionId] = style_player
+            //this.players[sessionId] = this.add.circle(player.x, player.y, player.radius, 0xaaaaaa).setStrokeStyle(3, 0xeaa66aa)
             //graphics.fillCircleShape(this.players[sessionId])
-            //NON VA this.physics.add.existing(graphics)
-
-            //NON VAthis.players[sessionId] = this.physics.add.sprite(300, 100, 'dude')
+           
 
             
             //this.players[sessionId].body.collideWorldBounds = true;
@@ -60,10 +58,11 @@ export default class HelloWorldScene extends Phaser.Scene
             //this.cameras.main.startFollow(this.players[sessionId])
 
             if (sessionId === this.room.sessionId) {
-                this.currentPlayer = this.add.circle(player.x, player.y, player.radius, 0xaaaaaa).setStrokeStyle(3, 0xeaa66aa)
-                console.log("sono qui con il giocatore corrente che è: ", this.currentPlayer)
-                this.cameras.main.startFollow(this.currentPlayer)
+                this.currentPlayer = style_player
+                console.log("CIAO CLIENT, il tuo giocatore è: ", this.currentPlayer)
                 //follow player with the camera
+                this.cameras.main.startFollow(this.currentPlayer)
+
             }
             //this.currentPlayer = this.players[sessionId]
             //graphics.fillCircleShape(this.currentPlayer)
@@ -129,8 +128,20 @@ export default class HelloWorldScene extends Phaser.Scene
     async update(){
         if(this.cursors){
             if( this.cursors.D.isDown) {
-                this.room.send("move", { x: +1 });
-                this.currentPlayer.x += 1;
+                this.room.send("move", { x: +5 });
+                this.currentPlayer.x += 5;
+            }
+            if( this.cursors.A.isDown) {
+                this.room.send("move", { x: -5 });
+                this.currentPlayer.x -= 5;          
+            }
+            if( this.cursors.W.isDown) {
+                this.room.send("move", { y: -5 });
+                this.currentPlayer.y -= 5;
+            }
+            if( this.cursors.S.isDown) {
+                this.room.send("move", { y: +5 });
+                this.currentPlayer.y += 5;
             }
         }
 
