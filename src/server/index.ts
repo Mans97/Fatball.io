@@ -43,11 +43,7 @@ import path from 'path'
 
 
 const port = Number(process.env.port || 2567);
-<<<<<<< HEAD
-
-=======
 const host = 'localhost'
->>>>>>> deb4c7bcb33c6967468803dc4b0fd58d231ca332
 const app = express();
 app.use(cors());
 app.use(express.json());
