@@ -42,6 +42,7 @@ import path from 'path'
 
 
 const port = Number(process.env.port || 2567);
+const host = 'localhost'
 const app = express();
 app.use(cors());
 app.use(express.json());

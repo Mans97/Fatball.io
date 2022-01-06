@@ -3,6 +3,7 @@ import { Room, Client, RedisPresence } from "colyseus";
 import { Schema, type, MapSchema } from "@colyseus/schema";
 import { Entity } from "./schema/Entity";
 
+const WORLD_SIZE = 2000;
 
 export class Player extends Entity {
   constructor() {
@@ -29,14 +30,27 @@ export class State extends Schema {
   }
 
   movePlayer (sessionId: string, movement: any) {
+
     console.log("MOVEMENT: ", movement)
+    const player = this.players.get(sessionId)
+
     if (movement.x) {
-      this.players.get(sessionId).x += movement.x * 1; //vecchia versione era: movement.x * 10
-      //console.log("movement.y * 10 ", movement.x * 10) 
+      
+      // player.x += movement.x * 1; //vecchia versione era: movement.x * 10
+      // if (player.x < 0) { player.x = 0; }
+      if (player.x > WORLD_SIZE) { player.x = WORLD_SIZE; }
+      else { player.x += movement.x * 1; }
+      if (player.x < 0) { player.x = 0; }
+      else { player.x += movement.x * 1; }
+      // if (player.y < 0) { player.y = 0; }
+      // if (player.y > WORLD_SIZE) { player.y = WORLD_SIZE; }
 
     } else if (movement.y) {
       console.log(movement)
-      this.players.get(sessionId).y += movement.y * 1;  //vecchia versione era: movement.y * 10
+      if (player.y > WORLD_SIZE) { player.y = WORLD_SIZE; }
+      else { player.y += movement.y * 1; }
+      if (player.y < 0) { player.y = 0; }
+      else { player.y += movement.y * 1; }
     }
   }
 }

@@ -2,6 +2,8 @@ import Phaser, { Data } from 'phaser'
 import * as Colyseus from 'colyseus.js'
 import { State } from '../../../server/rooms/GameRoom'
 
+const WORLD_SIZE = 2000;
+
 
 export default class HelloWorldScene extends Phaser.Scene
 {
@@ -35,7 +37,7 @@ export default class HelloWorldScene extends Phaser.Scene
         var bound_rect = this.add.rectangle(1000, 1000, 6000, 6000);  // draw rectangle around bounds
         bound_rect.setStrokeStyle(4000, 0x343a40); // stylize
 
-        this.physics.world.setBounds(0, 0, 1000, 1000); // set outer bounds
+        this.physics.world.setBounds(0, 0, WORLD_SIZE, WORLD_SIZE, true); // set outer bounds
         this.physics.world.setBoundsCollision(); //enable bounds
 
         // ------------ keyboard setting ------------
@@ -49,6 +51,8 @@ export default class HelloWorldScene extends Phaser.Scene
         console.log(this.room.sessionId) //id of connectedplayes, esiste anche room.name
 
         this.room.state.players.onAdd = (player: any, sessionId: string) => {
+
+            
             console.log("\tenter in onAdd")
             //generate random color
          
@@ -56,7 +60,8 @@ export default class HelloWorldScene extends Phaser.Scene
             //create the player
             var style_player = this.add.circle(player.x, player.y, player.radius, player.color).setStrokeStyle(3, 0xeaa66aa)
             this.physics.world.enable(style_player);
-            style_player = this.physics.add.existing(style_player);
+            this.add.existing(style_player)
+            this.physics.add.existing(style_player);
             //style_player.body.collideWorldBounds = true
             this.players[sessionId] = style_player
         
