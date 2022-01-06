@@ -1,3 +1,7 @@
+/*
+
+NON RIMUOVERE
+
 import { Schema, Context, type, MapSchema } from "@colyseus/schema";
 import { Entity } from "./Entity";
 import { Player } from "./Player";
@@ -19,8 +23,9 @@ export class State extends Schema {
     createPlayer(sessionId: string) {
         this.entities.set(sessionId, new Player().assign({
           x: Math.random() * this.width,
-          y: Math.random() * this.height
+          y: Math.random() * this.height,
+          color: Number("0x" + Math.floor(Math.random()*16777215).toString(16))
         }));
       }
 
-}
+}*/

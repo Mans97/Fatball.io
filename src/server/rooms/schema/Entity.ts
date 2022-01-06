@@ -4,6 +4,7 @@ export class Entity extends Schema {
   @type("float64") x!: number;
   @type("float64") y!: number;
   @type("float32") radius!: number;
+  @type("float32") color!: number;
 
   dead: boolean = false;
   angle: number = 0;

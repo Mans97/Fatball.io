@@ -12,16 +12,15 @@ export class Player extends Entity {
 }
 
 export class State extends Schema {
-  @type({ map: Player })
-  players = new MapSchema<Player>();
-
-  something = "This attribute won't be sent to the client-side";
+  @type({ map: Entity })
+  players = new MapSchema<Entity>();
 
   createPlayer(sessionId: string) {
       //oppure: this.players.set(sessionId, new Player());
       this.players.set(sessionId, new Player().assign({
         x: Math.random() * 200,
-        y: Math.random() * 200
+        y: Math.random() * 200,
+        color: Number("0x" + Math.floor(Math.random()*16777215).toString(16)) 
       }));
   }
 
@@ -58,8 +57,10 @@ export class GameRoom extends Room<State> {
 
     this.onMessage("move", (client, data) => {
         console.log("StateHandlerRoom received message from", client.sessionId, ":", data);
-        this.state.movePlayer(client.sessionId, data);
-        this.broadcast('move', data, { except: client }) 
+        //this.state.movePlayer(client.sessionId, data);
+        const player = this.state.players[client.sessionId]
+        //this.broadcast('move', data) 
+        players.
     });
 
   }

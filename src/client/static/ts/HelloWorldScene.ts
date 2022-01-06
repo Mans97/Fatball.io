@@ -31,6 +31,18 @@ export default class HelloWorldScene extends Phaser.Scene
 
     async create()
     {
+        //setting boards and input keyboards
+        var bound_rect = this.add.rectangle(1000, 1000, 6000, 6000);  // draw rectangle around bounds
+        bound_rect.setStrokeStyle(4000, 0x343a40); // stylize
+
+        this.physics.world.setBounds(0, 0, 1000, 1000); // set outer bounds
+        this.physics.world.setBoundsCollision(); //enable bounds
+
+        // ------------ keyboard setting ------------
+        this.cursors = this.input.keyboard.addKeys("W,A,S,D");
+        console.log(this.cursors)
+
+
         //Join room
         this.room = await this.client.joinOrCreate<State>('game_room') //if there is one in the room, I have to use joinOrCreate()
 
@@ -38,24 +50,18 @@ export default class HelloWorldScene extends Phaser.Scene
 
         this.room.state.players.onAdd = (player: any, sessionId: string) => {
             console.log("\tenter in onAdd")
+            //generate random color
+         
             
             //create the player
-            //this.circle_object = this.add.circle(0, 0, 50, 0xaaaaaa).setStrokeStyle(3, 0xeaa66aa);
-            //console.log(typeof "this.circle_object")
-            //this.players = this.physics.add.existing(this.circle_object);
-
-
-            //var graphics = this.add.graphics({ fillStyle: { color: 0xff0000}})
-            const style_player = this.add.circle(player.x, player.y, player.radius, 0xaaaaaa).setStrokeStyle(3, 0xeaa66aa)
+            var style_player = this.add.circle(player.x, player.y, player.radius, player.color).setStrokeStyle(3, 0xeaa66aa)
+            this.physics.world.enable(style_player);
+            style_player = this.physics.add.existing(style_player);
+            //style_player.body.collideWorldBounds = true
             this.players[sessionId] = style_player
-            //this.players[sessionId] = this.add.circle(player.x, player.y, player.radius, 0xaaaaaa).setStrokeStyle(3, 0xeaa66aa)
-            //graphics.fillCircleShape(this.players[sessionId])
-           
-
-            
+        
             //this.players[sessionId].body.collideWorldBounds = true;
-            //this.players2[sessionId].setCollideWorldBounds(true);
-            //this.cameras.main.startFollow(this.players[sessionId])
+            //this.players[sessionId].setCollideWorldBounds(true);
 
             if (sessionId === this.room.sessionId) {
                 this.currentPlayer = style_player
@@ -64,16 +70,21 @@ export default class HelloWorldScene extends Phaser.Scene
                 this.cameras.main.startFollow(this.currentPlayer)
 
             }
-            //this.currentPlayer = this.players[sessionId]
-            //graphics.fillCircleShape(this.currentPlayer)
-            //
-        
+
+              
+            player.onChange = (changes: any) => {
+                console.log("\t\t----- è cambiato qualcosa")
+            }
+
+
+
         }
         
         
 
         this.room.state.players.onRemove = (player: any, sessionId: any) => {
             delete this.players[sessionId];
+            console.log("\tREMOVE")
         }
 
         this.room.onStateChange((state: any) => {
@@ -91,21 +102,7 @@ export default class HelloWorldScene extends Phaser.Scene
         })*/
 
 
-        /**
-         * 
-         * FATBALL
-         * 
-         */
-        var bound_rect = this.add.rectangle(1000, 1000, 6000, 6000);  // draw rectangle around bounds
-        bound_rect.setStrokeStyle(4000, 0x343a40); // stylize
-
-        this.physics.world.setBounds(0, 0, 1000, 1000); // set outer bounds
-
-        // ------------ keyboard setting ------------
-        this.cursors = this.input.keyboard.addKeys("W,A,S,D");
-        console.log(this.cursors)
-
-
+      
         this.room.onMessage("move", (data: any) => {
             console.log("\t MOVED RECEIVED: message received from server");
             //console.log("pony", data);
@@ -129,41 +126,24 @@ export default class HelloWorldScene extends Phaser.Scene
         if(this.cursors){
             if( this.cursors.D.isDown) {
                 this.room.send("move", { x: +5 });
-                this.currentPlayer.x += 5;
+                //this.currentPlayer.x += 5;
             }
             if( this.cursors.A.isDown) {
                 this.room.send("move", { x: -5 });
-                this.currentPlayer.x -= 5;          
+                //this.currentPlayer.x -= 5;          
             }
             if( this.cursors.W.isDown) {
                 this.room.send("move", { y: -5 });
-                this.currentPlayer.y -= 5;
+                //this.currentPlayer.y -= 5;
             }
             if( this.cursors.S.isDown) {
                 this.room.send("move", { y: +5 });
-                this.currentPlayer.y += 5;
+                //this.currentPlayer.y += 5;
             }
         }
 
        
  
-
-        
-        /*if(this.cursors){
-            if( this.cursors.D.isDown) {
-                //room.send("move", { y: -1 });
-                this.currentPlayer.x += 5;
-            }
-            if( this.cursors.A.isDown) {
-                this.currentPlayer.x -= 5;          
-            }
-            if( this.cursors.W.isDown) {
-                this.currentPlayer.y -= 5;
-            }
-            if( this.cursors.S.isDown) {
-                this.currentPlayer.y += 5;
-            }
-        }*/
         
     }
 
