@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import 'regenerator-runtime/runtime'
 import HelloWorldScene from './HelloWorldScene'
 
+
 const config: Phaser.Types.Core.GameConfig = {
 	type: Phaser.AUTO,
     //mode: Phaser.Scale.FIT,
@@ -20,3 +21,5 @@ const config: Phaser.Types.Core.GameConfig = {
 }
 
 export default new Phaser.Game(config)
+
+
