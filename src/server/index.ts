@@ -1,3 +1,4 @@
+/*
 // Colyseus + Express
 import http from "http";
 import { Server } from "colyseus";
@@ -30,9 +31,7 @@ app.use('/colyseus', monitor())
 gameServer.listen(port)
 
 console.log(`Listening on ws://localhost:${port}`)
-/*
-
-    versione di Mario
+*/
 import http from "http";
 import { Server } from "colyseus";
 import express from "express";
@@ -43,15 +42,9 @@ import path from 'path'
 
 
 const port = Number(process.env.port || 2567);
-<<<<<<< HEAD
-
-=======
-const host = 'localhost'
->>>>>>> deb4c7bcb33c6967468803dc4b0fd58d231ca332
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('/static', express.static('public'))
 app.use("/static",express.static(__dirname+'../client/static'))
 
 //app.use('/static', express.static('public'))
@@ -60,13 +53,15 @@ const gameServer = new Server({
     server,
 });
 
-app.get('/game', (req, res) => {
-    res.redirect("ws://" + host + ":8000")
-})
-
 gameServer.define('game_room', GameRoom);
 
 app.use('/colyseus', monitor())
+
+/*
+app.get('/game', (req, res) => {
+    res.redirect("ws://" + 'localhost' + ":8000")
+})
+*/
 
 app.get('/', (req,res)=>{
     res.sendFile(path.join(__dirname, '../client/index.html'))
@@ -76,4 +71,4 @@ app.get('/', (req,res)=>{
 
 gameServer.listen(port)
 
-console.log(`Listening on ws://localhost:${port}`)*/
+console.log(`Listening on ws://localhost:${port}`)
