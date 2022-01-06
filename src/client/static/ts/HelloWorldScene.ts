@@ -1,4 +1,4 @@
-import Phaser from 'phaser'
+import Phaser, { Data } from 'phaser'
 import * as Colyseus from 'colyseus.js'
 import { State } from '../../../server/rooms/GameRoom'
 
@@ -58,8 +58,8 @@ export default class HelloWorldScene extends Phaser.Scene
 
 
             this.currentPlayer = this.players[sessionId]
-            graphics.fillCircleShape(this.currentPlayer)
-            this.cameras.main.startFollow(this.currentPlayer)
+            //graphics.fillCircleShape(this.currentPlayer)
+            //this.cameras.main.startFollow(this.currentPlayer)
         
         }
         
@@ -83,9 +83,12 @@ export default class HelloWorldScene extends Phaser.Scene
             this.room.send('keydown', evt.key) //lo mando a Colysius server
         })*/
 
-        this.room.onMessage("move", (message: any) => {
+        this.room.onMessage("move", (data: any) => {
             console.log("\t MOVED RECEIVED: message received from server");
-            console.log("pony", message);
+            //console.log("pony", data);
+            for(let id in data){
+                console.log("id:", id, " data: ", data)
+            }
         });
 
 
