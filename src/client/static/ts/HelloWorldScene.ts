@@ -52,7 +52,7 @@ export default class HelloWorldScene extends Phaser.Scene {
       }else{
         //create the player with text inside
         var circle_player = this.add
-          .circle(0, 0, player.radius, player.color)
+          .circle(0, 0, player.radius, player.color, 0.6)
           .setStrokeStyle(3, player.border_color);
         var playerNick = this.add.text(0, 0, 'Pippo', { fontFamily: 'Helvetica', fontSize: '32px', color: '#000' });
         playerNick.x = playerNick.x - playerNick.width/2
