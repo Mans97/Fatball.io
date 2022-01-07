@@ -8,63 +8,244 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://unpkg.com/colyseus.js@^0.14.0/dist/colyseus.js"></script>
-</head>
 
-<body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
         crossorigin="anonymous"></script>
-    <link type="text/css" href="/static/css/home.css">
+    <link type="text/css" href="/static/css/index.css">
 
+</head>
+
+<body>
     <!-- HTML starting for Login or Create -->
     <br>
-    <div class="row ">
-        <div class="col align-items-center" style="margin-left: 10%" id="login-table">
-            <div class="container">
-                <div clas="col "></div>
-                <div class="row ">
-                    <div class="col-sm-6 col-md-4 col-md-offset-4">
-                        <h1 style="text-align: center; margin-bottom: 10px" class="align-items-center login-title">
-                            Fatball.io</h1>
-                        <div class="account-wall">
+    <div id="login-content">
+        <div class="row ">
+            <div class="col align-items-center" style="margin-left: 10%" id="login-table">
+                <div class="container">
+                    <div clas="col "></div>
+                    <div class="row ">
+                        <div class="col-sm-6 col-md-4 col-md-offset-4">
+                            <h1 style="text-align: center; margin-bottom: 10px" class="align-items-center login-title">
+                                Fatball.io</h1>
+                            <div class="account-wall">
 
-                            <div class="form-signin">
-                                <input id="usernameField" type="text" class="form-control" placeholder="Username"
-                                    required autofocus>
-                                <br>
-                                <input id="roomNameField" type="text" class="form-control" placeholder="Room Name"
-                                    required>
-                                <br>
-                                <button id="join" class="btn btn-lg btn-primary btn-block" onclick="createAndJoin()"
-                                    type="submit">
-                                    Join Lobby</button>
+                                <div class="form-signin">
+                                    <input id="usernameField" type="text" class="form-control" placeholder="Username"
+                                        required autofocus>
+                                    <br>
+                                    <input id="roomNameField" type="text" class="form-control" placeholder="Room Name"
+                                        required>
+                                    <br>
+                                    <button id="join" class="btn btn-lg btn-primary btn-block" onclick="createAndJoin()"
+                                        type="submit">
+                                        Join Lobby</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <table style="margin-right: 10%" class="col table table-hover text-center">
-            <thead>
-                <tr>
-                    <th scope="col">Room Name</th>
-                    <th scope="col">Num. Players</th>
-                    <th scope="col">Join Room</th>
-                </tr>
-            </thead>
-            <tbody id="lobby-list">
-            </tbody>
-        </table>
     </div>
-
+    <div style="display: none" id="lobby-content">
+        <div>
+            <h1 class="d-flex justify-content-center">Lobby Players:</h1><br>
+            <div class="d-flex justify-content-center">
+                <ol id="list-username" class="list-group list-group-numbered">
+                    <!-- Dynamic insert for user listing -->
+                </ol>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col text-center">
+                <button style="margin-top: 30px" id="button-game" class="btn btn-lg btn-secondary btn-block"
+                    disabled>Waiting for players</button>
+            </div>
+        </div>
+    </div>
 
     <!-- End HTML -->
 
 
+    <script>
+        var host = window.document.location.host.replace(/:.*/, '');
+        var client = new Colyseus.Client(location.protocol.replace("http", "ws") + "//" + host + (location.port ? ':' + location.port : ''));
+        var lobby;
+        var _username = "" // joining username
+        var _roomName = "" // lobby room name
+        var _userList; // list of users connected to the lobby with the room name
+        const loginPhase = document.getElementById('login-content') // login session
+        const lobbyPhase = document.getElementById('lobby-content') // lobby session
+        var _loginSession = true
+        var _lobbySession = false
+        var _listUsers = []
+        var _buttonGame;
 
-    <script type="module" src="./js/lobby.js">
-    
+        /**
+         * precondition() - Used to check if fields respects some constraints 
+         * about input management to join in a lobby.
+         */
+        function precondition() {
+            _username = document.getElementById("usernameField").value // field value
+            _roomName = document.getElementById("roomNameField").value // field value
+
+            // controls for not empty fields (it is never null but "")
+            if (_username == "" || _roomName == "") {
+                alert('You need to insert username and room name to join or create!') // TODO: Update it with a modal message
+                return 0
+            }
+        }
+
+        /**
+         * createAndJoin() - Create a WebSocket connection with the LobbyGameRoom used for distributed 
+         * lobby status on a single instance (and shared state) 
+         */
+        function createAndJoin() {
+            precondition() // calling pre-conditions
+            console.log(`Connection of ${_username} on ${_roomName}`) //
+            var room = client.joinOrCreate("lobby_room", // if not exists, onCreate and than onJoin
+                {
+                    username: _username, // register in the client distributed instance
+                    roomId: _roomName // this.roomID
+                }).then(room_instance => {
+                    lobby = room_instance // update the lobby state locally
+                    toggleInterface(); // update interface to check lobby informations and hide the login
+                    listeners(); // settings listeners for connections binding 
+                    retrieveListUsername() // updating the list of usernames
+
+                }).catch(e => {
+                    console.error("Error", e);
+                });
+        }
+
+
+        /**
+         * send request to have the distributed connections metadata, considering only username
+         * the response is in broadcast.
+         */
+        function retrieveListUsername() {
+            // send to the server the usernameList for initial update
+            lobby.send("usernamesRequest", {})
+        }
+
+
+        /**
+         * adding listeners for event-driven web sockets message in async way
+         */
+        function listeners() {
+
+            // additional listener with only the information task
+            lobby.onStateChange((state) => {
+                console.log("State changed, joined one: " + state)
+                console.log(lobby)
+            })
+
+            // + indicate the command to adjust the local username list because there is a new entry
+            lobby.onMessage('+', function (usernames) {
+                // adding username from the current client list
+                if (_lobbySession) {
+                    _listUsers = usernames
+                    updateListUsername(usernames);
+                } else {
+                    // do nothing, illegal call
+                }
+            })
+
+            // - indicate the command to adjust the local username list because there is a leaver
+            lobby.onMessage('-', function (usernames) {
+                _listUsers = usernames
+                updateListUsername(usernames);
+            })
+
+            // indicate the message to check if the game could start or not based on the minimum connections
+            lobby.onMessage('players', function (counter) {
+                console.log('Message called')
+                if (counter < 4) {
+                    // not enough players to start the game
+                    updateButtonGame(disabled = false)
+                } else {
+                    // enough player to start game, prepare for it!
+                    updateButtonGame(disabled = true)
+                }
+            });
+
+            lobby.onLeave((client) => {
+                console.log("Log: Leaving Connection invoke...");
+            });
+        }
+
+        /**
+         * toggleInterface() - Modify the interface and display the lobby username of played connected (first iteraction)
+         */
+        function toggleInterface() {
+            if (loginPhase.style.display == "none") {
+                loginPhase.style.display = "block"; _lobbySession = false; _loginSession = true;
+            } else { loginPhase.style.display = "none"; _lobbySession = true; _loginSession = false; }
+            if (lobbyPhase.style.display == "none") {
+                lobbyPhase.style.display = "block"; _lobbySession = true; _loginSession = false;
+            } else { lobbyPhase.style.display = "none"; _lobbySession = false; _loginSession = true; }
+        }
+
+        /**
+         * updateListUsername() - Updating the list of usernmes in the lobby given by broadcast command to re-set the username list
+         * with upgraded information (current LobbyGameRoom state)
+         */ 
+        function updateListUsername(usernames) {
+            if (lobbyPhase.style.display == "block") {
+                listUsername = document.getElementById("list-username")
+                if (listUsername == undefined) return 0
+                listUsername.innerHTML = ""
+                _listUsers = usernames
+                for (let i = 0; i < usernames.length; i++) {
+                    username = usernames[i]
+                    listUsername.innerHTML = listUsername.innerHTML +
+                        "<li id=\"el-username-" + username + "\" class=\"list-group-item d-flex justify-content-between align-items-start\">" +
+                        "<div class=\"ms-1 me-auto\">" +
+                        "    <div class=\"fw-bold\">" + username + "</div>" +
+                        "</div>" +
+                        "<div class=\"ms-2 me-auto\"></div>" +
+                        "<span class=\"badge bg-primary rounded-pill\">Connected</span>" +
+                        " </li>"
+
+                }
+            }
+        }
+
+        /**
+         * updateButtonGame() - Update the button session based on the user counting with event-driven messages 
+         * communication on the joining or leaving event. This method is called only in the listeners, be aware to not use outside.
+         */
+        function updateButtonGame(disabled) {
+            console.log('Updating game status...')
+            buttonGame = document.getElementById('button-game')
+            if (disabled) {
+                console.log('Game Ready, it should start...')
+                buttonGame.disabled = false
+                buttonGame.innerHTML = "Start"
+                buttonGame.style.backgroundColor = "#0275d8" // don't scare, it is the primary color
+            } else {
+                console.log('Game cannot start, waiting player...');
+                buttonGame.disabled = true
+                buttonGame.innerHTML = "Waiting other players"
+                buttonGame.style.backgroundColor = "gray" // secondary color for disabled session
+            }
+
+        }
+
+        /*
+        * leave() is a possible implementation about a leave button, actually it is not needed because
+        * the client status is catched in the onLeave listener and propagated in broadcast to the other clients.
+        */
+        function leave() {
+            if (lobby) {
+                lobby.leave();
+
+            } else {
+                console.warn("Not connected.");
+            }
+        }
+
     </script>
 </body>
 
