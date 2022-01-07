@@ -22,13 +22,15 @@ export default class HelloWorldScene extends Phaser.Scene {
   }
 
   preload() {
-    //this.load.setBaseURL('http://labs.phaser.io')
-    var target_path = "../assets/target.png";
-    this.load.image("target", target_path);
-    //this.load.image('sky', 'assets/skies/space3.png')
+    this.load.setBaseURL('http://labs.phaser.io')
+    // var target_path = "/assets/target.png";
+    // this.load.image("target", target_path);
+    this.load.image('target', 'assets/particles/blue.png')
+    this.load.image('bullet', 'assets/bullets/bullet39.png')
   }
 
   async create() {
+    var first_click: Boolean = true;
     //setting boards and input keyboards
     var game = this.game;
 
@@ -37,10 +39,6 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     this.physics.world.setBounds(0, 0, WORLD_SIZE, WORLD_SIZE, true); // set outer bounds
     this.physics.world.setBoundsCollision(); //enable bounds
-
-    game.canvas.addEventListener("mousedown", function () {
-      game.input.mouse.requestPointerLock();
-    });
 
     // ------------ keyboard setting ------------
     this.cursors = this.input.keyboard.addKeys("W,A,S,D");
@@ -52,20 +50,34 @@ export default class HelloWorldScene extends Phaser.Scene {
     console.log(this.room.sessionId); //id of connectedplayes, esiste anche room.name
 
     var reticle = this.physics.add.sprite(500, 400, "target");
-    reticle
-      .setOrigin(0.5,0.5)
-      .setDisplaySize(25, 25)
-      .setCollideWorldBounds(false);
+    reticle.setOrigin(0.5,0.5)
+          .setDisplaySize(25, 25)
+          .setCollideWorldBounds(false);
 
-    console.log("reticleee: ",reticle)
 
-    this.input.on(
-      "pointermove",
-      (pointer: { movementX: number; movementY: number }) => {
+    //reticle initial settings
+    game.canvas.addEventListener("mousedown", function () {
+      game.input.mouse.requestPointerLock();
+      if(first_click){ //setting the reticle where you have clicked only for the first time
+        reticle.x = game.input.mousePointer.x;
+        reticle.y = game.input.mousePointer.y;
+        first_click = false;
+      }
+      
+    });
+    if (!game.input.mouse.locked) {
+      first_click = true;
+    }
+      
+    
+  
+    this.input.on("pointermove",(pointer: { movementX: number; movementY: number }) => {
         if (game.input.mouse.locked) {
+          
           // Move reticle with mouse
           reticle.x += pointer.movementX;
           reticle.y += pointer.movementY;
+
         }
       },
       this
@@ -138,6 +150,7 @@ export default class HelloWorldScene extends Phaser.Scene {
           this.players[id].x = this.room.state.players[id].x;
           this.players[id].y = this.room.state.players[id].y;
 
+
           //getting from data of ARC
           if (this.room.state.players[id].radius != 10) {
             //only for player, not food
@@ -147,13 +160,10 @@ export default class HelloWorldScene extends Phaser.Scene {
             if (old_radius != this.room.state.players[id].radius) {
               //if the radius change, I will update the radius
               //update of the radius
-              console.log(
-                "nuovo radius (è aumentato): ",
-                this.room.state.players[id].radius
-              );
-              var circle_player_with_new_radius = circle_player.setRadius(
-                this.room.state.players[id].radius
-              );
+
+              if(circle_player){
+                circle_player.setRadius(this.room.state.players[id].radius);
+              }
             }
           }
         }
@@ -181,6 +191,51 @@ export default class HelloWorldScene extends Phaser.Scene {
             this.room.send('keydown', evt.key) //lo mando a Colysius server
         })*/
   }
+
+
+  //vecchio bullets
+ /* function enemyHitCallback(enemyHit, bulletHit){
+    // Reduce health of enemy
+    if (bulletHit.active === true && enemyHit.active === true){
+        // Destroy bullet
+        bulletHit.setActive(false).setVisible(false);
+        // QUESTO DEVE ACCADERE SUBITO 
+        // ---> enemyHit.setActive(false).setVisible(false);
+        enemyHit.setRadius(enemyHit.radius - (enemyHit.radius*0.05)) //reduce of 5% his radius
+        //increase radius of player who is shotting
+        return true; //hitted
+    }
+}
+
+function enemyCollisionCallback(enemyCollided, player_principal){
+    if (enemyCollided.active === true && player_principal.active === true){
+        console.log(player_principal.radius)
+        if(player_principal.radius>=enemyCollided.radius){
+            enemyCollided.setActive(false).setVisible(false);
+            player_principal.setRadius(player_principal.radius + enemyCollided.radius)
+             /*******************************************
+             *                                          | 
+             *                                          |
+             *   GESTIRE COSA SUCCEDE AL NEMICO QUI     |
+             *                                          |
+             *                                          | 
+             ********************************************
+        }else{
+            player_principal.setActive(false).setVisible(false);
+            arrow_pointer.setActive(false).setVisible(false);
+
+            /*************************************
+             *                                   | 
+             *                                   |
+             *   GESTIRE STATO GAME OVER QUI     |
+             *                                   |
+             *                                   | 
+             ************************************
+
+        }
+       //check which radius in bigger
+    }
+}*/
 
   async update() {
     if (this.cursors) {
