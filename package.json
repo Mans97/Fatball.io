@@ -35,7 +35,8 @@
     "cors": "^2.8.5",
     "express": "^4.16.4",
     "parcel": "^2.0.1",
-    "phaser": "^3.55.2"
+    "phaser": "^3.55.2",
+    "with-alpha-hex": "^1.0.6"
   },
   "parcelCleanPaths": [
     "dist"
