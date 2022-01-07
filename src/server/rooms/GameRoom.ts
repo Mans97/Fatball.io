@@ -4,14 +4,13 @@ import { Schema, type, MapSchema } from "@colyseus/schema";
 import { Entity } from "./schema/Entity";
 import { generateId } from "colyseus";
 
-
 const WORLD_SIZE = 2000;
 
 export class Player extends Entity {
   constructor() {
     super();
     this.radius = 20;
-    this.minimun_radius = 15
+    this.minimun_radius = 15;
     this.maximum_radius = 250;
   }
 }
@@ -39,142 +38,130 @@ export class State extends Schema {
         name: sessionId,
         your_bullets: 5,
         points: 0,
-        minimun_radius: 15 //if reach this radius, the player will die
+        minimun_radius: 15, //if reach this radius, the player will die
       })
     );
   }
 
-  createFood(){
+  createFood() {
     const food = new Entity().assign({
       x: Math.random() * WORLD_SIZE,
       y: Math.random() * WORLD_SIZE,
-      radius: 10
-    })
-    this.players.set(generateId(), food)
+      radius: 10,
+    });
+    this.players.set(generateId(), food);
   }
 
   movePlayer(sessionId: string, movement: any) {
     //console.log("MOVEMENT: ", movement);
     const player = this.players.get(sessionId);
-    if (!player){ //dead players cannot move
-      console.log("\t\t Dead player cannot move! ")
-      return
+    if (!player) {
+      //dead players cannot move
+      console.log("\t\t Dead player cannot move! ");
+      return;
     }
     if (movement.x) {
       if (player.x > WORLD_SIZE) {
         player.x = WORLD_SIZE;
       } else {
-        if (player.radius>=15 && player.radius<=80)
+        if (player.radius >= 15 && player.radius <= 80)
           player.x += movement.x * 5;
-        else if (player.radius>80 && player.radius<=160)
-          player.x += movement.x * 4;
-        else
-          player.x += movement.x * 3;
+        else if (player.radius > 80 && player.radius <= 160)
+          player.x += movement.x * 3.5;
+        else player.x += movement.x * 2.5;
       }
       //boundaries for x
-      if (player.x < 0) { 
+      if (player.x < 0) {
         player.x = 0;
       } else {
-        if (player.radius>=15 && player.radius<=80)
+        if (player.radius >= 15 && player.radius <= 80)
           player.x += movement.x * 5;
-        else if (player.radius>80 && player.radius<=160)
-          player.x += movement.x * 4;
-        else
-          player.x += movement.x * 3;
+        else if (player.radius > 80 && player.radius <= 160)
+          player.x += movement.x * 3.5;
+        else player.x += movement.x * 1.5;
       }
-    
     } else if (movement.y) {
       //console.log(movement);
       if (player.y > WORLD_SIZE) {
         player.y = WORLD_SIZE;
       } else {
-        if (player.radius>=15 && player.radius<=80)
+        if (player.radius >= 15 && player.radius <= 80)
           player.y += movement.y * 5;
-        else if (player.radius>80 && player.radius<=160)
-          player.y += movement.y * 4;
-        else
-          player.y += movement.y * 3;
+        else if (player.radius > 80 && player.radius <= 160)
+          player.y += movement.y * 3.5;
+        else player.y += movement.y * 2.5;
       }
       //boundaries for y
-      if (player.y < 0) { 
+      if (player.y < 0) {
         player.y = 0;
       } else {
-        if (player.radius>=15 && player.radius<=80)
+        if (player.radius >= 15 && player.radius <= 80)
           player.y += movement.y * 5;
-        else if (player.radius>80 && player.radius<=160)
-          player.y += movement.y * 4;
-        else
-          player.y += movement.y * 3;
+        else if (player.radius > 80 && player.radius <= 160)
+          player.y += movement.y * 3.5;
+        else player.y += movement.y * 2.5;
       }
     }
   }
 
-
-
-  update(){
+  update() {
     //console.log("\t\t ----------- Update in room ----------- ")
     const deadPlayers: string[] = [];
-    this.players.forEach((player, sessionId) =>{
-      if(player.dead){
-        deadPlayers.push(sessionId)
-        return
+    this.players.forEach((player, sessionId) => {
+      if (player.dead) {
+        deadPlayers.push(sessionId);
+        return;
       }
-     
-      this.players.forEach((collidePlayer, collideSessionId) =>{
-        if(collidePlayer == player){ //no collision allowed with the same player (current player)
-          return
+
+      this.players.forEach((collidePlayer, collideSessionId) => {
+        if (collidePlayer == player) {
+          //no collision allowed with the same player (current player)
+          return;
         }
 
         /** you can eat only the food, so your radius has to be more bigger than the collide object and
          * the collided object CANNOT be an other player. So the radius of the
          * collided object has to be 10 (only the food will have 10 of radius).
-         * 
+         *
          * ** The minimun radius of players will be > 10 (for exaple 15 is a good minimun radius for every player)
          */
-        if (player.radius > collidePlayer.radius && collidePlayer.radius == 10){ 
-            //check if there is the collision (use of distance between the objects)
-            /**
-             * If the distance between the objects is less than the sum of the two 
-             * radius, there is a collision because the objects are overlapped
-             */
-            if((player.radius + collidePlayer.radius) >= Entity.distance(player, collidePlayer) ){ //if the sum of two radius is more bigger than the distance, there is the collision
-              //console.log("\t\tCollision")
-              deadPlayers.push(collideSessionId)// this elements will be removed
-              this.createFood()
-              if (player.radius <= player.maximum_radius)
-              player.radius += collidePlayer.radius - 5 //increase the radius of player
-
-            }
-
-
+        if (
+          player.radius > collidePlayer.radius &&
+          collidePlayer.radius == 10
+        ) {
+          //check if there is the collision (use of distance between the objects)
+          /**
+           * If the distance between the objects is less than the sum of the two
+           * radius, there is a collision because the objects are overlapped
+           */
+          if (
+            player.radius + collidePlayer.radius >=
+            Entity.distance(player, collidePlayer)
+          ) {
+            //if the sum of two radius is more bigger than the distance, there is the collision
+            //console.log("\t\tCollision")
+            deadPlayers.push(collideSessionId); // this elements will be removed
+            this.createFood();
+            if (player.radius <= player.maximum_radius)
+              player.radius += collidePlayer.radius - 5; //increase the radius of player
+          }
         }
-
-
-      })
-
-      
-
-    })
-
-
-
-
+      });
+    });
     // delete all dead entities
-    deadPlayers.forEach(sessionId => {
-      this.players.delete(sessionId)
-      console.log("RIMOZIONE PLAYER: ", sessionId)
-    })
-
+    deadPlayers.forEach((sessionId) => {
+      this.players.delete(sessionId);
+      console.log("RIMOZIONE PLAYER: ", sessionId);
+    });
   }
 }
-
 
 export class GameRoom extends Room<State> {
   onCreate(options: any) {
     this.setState(new State());
     //add food
-    for (let i = 0; i<25; i++){
-      this.state.createFood()
+    for (let i = 0; i < 25; i++) {
+      this.state.createFood();
     }
 
     /*this.onMessage("keydown", (client, message) => { //keydown è il nome del message che arriva al server 
@@ -182,12 +169,12 @@ export class GameRoom extends Room<State> {
           except: client //tranne che a me stesso
         }) 
     });*/
-    
+
     this.onMessage("move", (client, data) => {
       //console.log("StateHandlerRoom received message from",client.sessionId,":",data);
       this.state.movePlayer(client.sessionId, data);
     });
-    this.setSimulationInterval(() => this.state.update()) //default is 60fps
+    this.setSimulationInterval(() => this.state.update()); //default is 60fps
   }
 
   onJoin(client: Client, options: any) {
@@ -199,9 +186,9 @@ export class GameRoom extends Room<State> {
 
   onLeave(client: Client, consented: boolean) {
     console.log(client.sessionId, "left!");
-    const player = this.state.players.get(client.sessionId)
-    if (player){
-      player.dead = true
+    const player = this.state.players.get(client.sessionId);
+    if (player) {
+      player.dead = true;
     }
   }
 

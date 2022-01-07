@@ -1,7 +1,6 @@
 import Phaser from 'phaser'
 import 'regenerator-runtime/runtime'
 import HelloWorldScene from './HelloWorldScene'
-//import {WORLD_SIZE} from './const.js'
 
 const WORLD_SIZE = 600; 
 

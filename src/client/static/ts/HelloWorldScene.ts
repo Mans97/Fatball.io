@@ -23,16 +23,24 @@ export default class HelloWorldScene extends Phaser.Scene {
 
   preload() {
     //this.load.setBaseURL('http://labs.phaser.io')
+    var target_path = "../assets/target.png";
+    this.load.image("target", target_path);
     //this.load.image('sky', 'assets/skies/space3.png')
   }
 
   async create() {
     //setting boards and input keyboards
+    var game = this.game;
+
     var bound_rect = this.add.rectangle(1000, 1000, 6000, 6000); // draw rectangle around bounds
     bound_rect.setStrokeStyle(4000, 0x343a40); // border of 4000 px to the playground, color gray
 
     this.physics.world.setBounds(0, 0, WORLD_SIZE, WORLD_SIZE, true); // set outer bounds
     this.physics.world.setBoundsCollision(); //enable bounds
+
+    game.canvas.addEventListener("mousedown", function () {
+      game.input.mouse.requestPointerLock();
+    });
 
     // ------------ keyboard setting ------------
     this.cursors = this.input.keyboard.addKeys("W,A,S,D");
@@ -48,34 +56,46 @@ export default class HelloWorldScene extends Phaser.Scene {
       var circle_player: Phaser.GameObjects.Arc;
       var style_player: Phaser.GameObjects.Container;
 
-      if (player.radius != 10){
-          //create the player with text inside
+      if (player.radius != 10) {
+        //create the player with text inside
         circle_player = this.add
           .circle(0, 0, player.radius, player.color, 0.6)
           .setStrokeStyle(3, player.border_color);
-      
-        var playerNick = this.add.text(0, 0, 'Pippo', { fontFamily: 'Helvetica', fontSize: '32px', color: '#000' });
-        playerNick.x = playerNick.x - playerNick.width/2
-        playerNick.y = playerNick.y - playerNick.height/2
+
+        var playerNick = this.add.text(0, 0, player.name, {
+          fontFamily: "Helvetica",
+          fontSize: "32px",
+          color: "#000",
+        });
+
+        playerNick.x = playerNick.x - playerNick.width / 2;
+        playerNick.y = playerNick.y - playerNick.height / 2;
 
         //setting the data inserting the radius, we'll need this to retrieve and modify it if the radius will change
-        circle_player.setData('radius', '' + player.radius)
+        circle_player.setData("radius", "" + player.radius);
 
-        style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [circle_player, playerNick])
-      } 
-
-      else {//generate the food
+        style_player = new Phaser.GameObjects.Container(
+          this,
+          player.x,
+          player.y,
+          [circle_player, playerNick]
+        );
+      } else {
+        //generate the food
         //create style of food
         var food_style = this.add
-          .circle(0, 0, player.radius, 0xEEA635)
-          .setStrokeStyle(3, 0xEEA635);
-        
+          .circle(0, 0, player.radius, 0xeea635)
+          .setStrokeStyle(3, 0xeea635);
+
         //food_style.setData('radius', '' + player.radius)
         //create object food
-        style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [food_style])
-
+        style_player = new Phaser.GameObjects.Container(
+          this,
+          player.x,
+          player.y,
+          [food_style]
+        );
       }
-
 
       this.physics.world.enable(style_player);
       this.add.existing(style_player);
@@ -88,10 +108,30 @@ export default class HelloWorldScene extends Phaser.Scene {
         console.log("CIAO CLIENT, il tuo giocatore è: ", this.currentPlayer);
         //follow player with the camera
         this.cameras.main.startFollow(this.currentPlayer);
+
+        var reticle = this.physics.add.sprite(500, 400, "target");
+        reticle
+          .setOrigin(this.currentPlayer.x, this.currentPlayer.y)
+          .setDisplaySize(25, 25)
+          .setCollideWorldBounds(false);
+
+        console.log("reticleee: ",reticle)
+
+        this.input.on(
+          "pointermove",
+          (pointer: { movementX: number; movementY: number }) => {
+            if (game.input.mouse.locked) {
+              // Move reticle with mouse
+              reticle.x += pointer.movementX;
+              reticle.y += pointer.movementY;
+            }
+          },
+          this
+        );
+
       }
 
       player.onChange = (changes: any) => {
-        
         //console.log("\t\t----- è cambiato qualcosa", changes);
         for (let id in this.players) {
           //updates of position of every players and current player
@@ -99,22 +139,30 @@ export default class HelloWorldScene extends Phaser.Scene {
           this.players[id].y = this.room.state.players[id].y;
 
           //getting from data of ARC
-          if(this.room.state.players[id].radius != 10){ //only for player, not food
+          if (this.room.state.players[id].radius != 10) {
+            //only for player, not food
             //getting the radius stored in "data" of Arc
-            var old_radius = this.players[id].getAt(0).getData('radius')
+            var old_radius = this.players[id].getAt(0).getData("radius");
 
-            if(old_radius != this.room.state.players[id].radius){ //if the radius change, I will update the radius
+            if (old_radius != this.room.state.players[id].radius) {
+              //if the radius change, I will update the radius
               //update of the radius
-              //console.log("nuovo radius (è aumentato): ", this.room.state.players[id].radius)
-              var circle_player_with_new_radius = circle_player.setRadius(this.room.state.players[id].radius)
-        
+              console.log(
+                "nuovo radius (è aumentato): ",
+                this.room.state.players[id].radius
+              );
+              var circle_player_with_new_radius = circle_player.setRadius(
+                this.room.state.players[id].radius
+              );
             }
           }
         }
       };
     };
 
-    this.room.state.players.onRemove = ( _: any, sessionId: any) => {
+
+
+    this.room.state.players.onRemove = (_: any, sessionId: any) => {
       console.log("\tREMOVE", sessionId);
       this.players[sessionId].destroy();
       delete this.players[sessionId];
@@ -153,6 +201,5 @@ export default class HelloWorldScene extends Phaser.Scene {
         //this.currentPlayer.y += 5;
       }
     }
-    
   }
 }
