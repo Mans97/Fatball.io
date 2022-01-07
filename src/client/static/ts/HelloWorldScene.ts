@@ -178,6 +178,29 @@ export default class HelloWorldScene extends Phaser.Scene {
       delete this.players[sessionId];
     };
 
+
+    // Fires bullet from player on left click of mouse
+    this.input.on('pointerdown', function (pointer: any, time: any, lastFired: any) {
+
+      //this.room.send("move", { reticle_x: 3333, reticle_y: 23 });
+
+      //*************************************************
+      // *************** VECCHIA VERSIONE ***************
+      // Get bullet from bullets group
+      // var bullet = arrow_pointer_Bullets.get().setActive(true).setVisible(true);
+
+      // if (bullet && player.radius > 25){ // when radius is small than 25, then you can't shot
+      //     bullet.fire(arrow_pointer, reticle);
+      //     //remove 5% of the radius for each bullets 
+   
+      //     player.setRadius(player.radius - (player.radius*0.05));            
+      //     console.log(player.radius)
+
+      //     this.physics.add.collider(player2, bullet, enemyHitCallback);
+         
+      // }
+  }, this);
+
     /*this.room.onStateChange((state: any) => {
       console.log("the room state has been updated:", state);
     });*/
