@@ -10,7 +10,8 @@ const WORLD_SIZE = 2000;
 export class Player extends Entity {
   constructor() {
     super();
-    this.radius = 100;
+    this.radius = 20;
+    this.minimun_radius = 15
   }
 }
 
@@ -31,10 +32,13 @@ export class State extends Schema {
       new Player().assign({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
+        radius: 20, //initial radius
         color: color,
         border_color: color,
         name: sessionId,
-        your_bullets: 5
+        your_bullets: 5,
+        points: 0,
+        minimun_radius: 15 //if reach this radius, the player will die
       })
     );
   }
@@ -116,6 +120,7 @@ export class State extends Schema {
               //console.log("\t\tCollision")
               deadPlayers.push(collideSessionId)// this elements will be removed
               this.createFood()
+              player.radius += collidePlayer.radius //increase the radius of player
 
             }
 

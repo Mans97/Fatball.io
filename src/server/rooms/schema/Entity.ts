@@ -7,7 +7,9 @@ export class Entity extends Schema {
   @type("float32") color!: number;
   @type("float32") border_color!: number;
   @type("string") name!: string;
-  @type("int32") your_bullets: number; 
+  @type("int32") your_bullets!: number; 
+  @type("int32") points!: number;
+  @type("float32") minimun_radius!: number;
 
   dead: boolean = false;
   angle: number = 0;

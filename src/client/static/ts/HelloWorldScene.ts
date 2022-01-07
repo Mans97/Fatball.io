@@ -9,6 +9,7 @@ export default class HelloWorldScene extends Phaser.Scene {
   players: { [id: string]: Phaser.GameObjects.Container } = {};
   currentPlayer: Phaser.GameObjects.Container;
   foods: { [id: string]: Phaser.GameObjects.Container } = {};
+  arc: Phaser.GameObjects.Arc;
   private declare circle_object: any;
   private client: Colyseus.Client;
   room: any;
@@ -43,39 +44,34 @@ export default class HelloWorldScene extends Phaser.Scene {
     console.log(this.room.sessionId); //id of connectedplayes, esiste anche room.name
 
     this.room.state.players.onAdd = (player: any, sessionId: string) => {
-    //console.log("\tenter in onAdd");
-
       //console.log("\tenter in onAdd");
-      //generate the food
-
-      /*if(player.radius == 10){ //only the food can have radius of 10
-        var style_player = this.add.circle(0,0, player.radius, 0xFFFF0B).setStrokeStyle(3, 0xFFFF0B);
-        this.physics.world.enable(style_player);
-        this.add.existing(style_player);
-        this.physics.add.existing(style_player);
-        this.players[sessionId] =  new Phaser.GameObjects.Container(this, player.x, player.y, [style_player])
-        console.log(this.players[sessionId])
-      }*/
+      if (player.radius != 10){
+          //create the player with text inside
+        var circle_player = this.add
+          .circle(0, 0, player.radius, player.color, 0.6)
+          .setStrokeStyle(3, player.border_color);
       
-       
-        if (player.radius != 10){
-           //create the player with text inside
-          var circle_player = this.add
-            .circle(0, 0, player.radius, player.color, 0.6)
-            .setStrokeStyle(3, player.border_color);
-        
-          var playerNick = this.add.text(0, 0, 'Pippo', { fontFamily: 'Helvetica', fontSize: '32px', color: '#000' });
-          playerNick.x = playerNick.x - playerNick.width/2
-          playerNick.y = playerNick.y - playerNick.height/2
-          var style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [circle_player,playerNick])
+        var playerNick = this.add.text(0, 0, 'Pippo', { fontFamily: 'Helvetica', fontSize: '32px', color: '#000' });
+        playerNick.x = playerNick.x - playerNick.width/2
+        playerNick.y = playerNick.y - playerNick.height/2
 
-        }else{
-          var food_style = this.add
+        //setting the data inserting the radius, we'll need this to retrieve and modify it if the radius will change
+        circle_player.setData('radius', '' + player.radius)
+
+        var style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [circle_player, playerNick])
+      }else{//generate the food
+        //create style of food
+        var food_style = this.add
           .circle(0, 0, player.radius, 0xEEA635)
           .setStrokeStyle(3, 0xEEA635);
-          var style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [food_style])
+        
+        //food_style.setData('radius', '' + player.radius)
 
-        }
+        
+        //create object food
+        var style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [food_style])
+
+      }
 
 
         this.physics.world.enable(style_player);
@@ -103,6 +99,22 @@ export default class HelloWorldScene extends Phaser.Scene {
           //updates of position of every players and current player
           this.players[id].x = this.room.state.players[id].x;
           this.players[id].y = this.room.state.players[id].y;
+
+          //getting from data of ARC
+          if(this.room.state.players[id].radius != 10){ //only for player, not food
+            //getting the radius stored in "data" of Arc
+            var old_radius = this.players[id].getAt(0).getData('radius')
+
+            if(old_radius != this.room.state.players[id].radius){ //if the radius change, I will update the radius
+              //update of the radius
+              //console.log("nuovo radius (è aumentato): ", this.room.state.players[id].radius)
+              var circle_player_with_new_radius = circle_player.setRadius(this.room.state.players[id].radius)
+        
+            }
+          }
+         
+         
+          
 
         }
       };
