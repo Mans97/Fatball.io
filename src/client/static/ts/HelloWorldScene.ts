@@ -45,9 +45,12 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     this.room.state.players.onAdd = (player: any, sessionId: string) => {
       //console.log("\tenter in onAdd");
+      var circle_player: Phaser.GameObjects.Arc;
+      var style_player: Phaser.GameObjects.Container;
+
       if (player.radius != 10){
           //create the player with text inside
-        var circle_player = this.add
+        circle_player = this.add
           .circle(0, 0, player.radius, player.color, 0.6)
           .setStrokeStyle(3, player.border_color);
       
@@ -58,32 +61,26 @@ export default class HelloWorldScene extends Phaser.Scene {
         //setting the data inserting the radius, we'll need this to retrieve and modify it if the radius will change
         circle_player.setData('radius', '' + player.radius)
 
-        var style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [circle_player, playerNick])
-      }else{//generate the food
+        style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [circle_player, playerNick])
+      } 
+
+      else {//generate the food
         //create style of food
         var food_style = this.add
           .circle(0, 0, player.radius, 0xEEA635)
           .setStrokeStyle(3, 0xEEA635);
         
         //food_style.setData('radius', '' + player.radius)
-
-        
         //create object food
-        var style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [food_style])
+        style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [food_style])
 
       }
 
 
-        this.physics.world.enable(style_player);
-        this.add.existing(style_player);
-        this.physics.add.existing(style_player);
-
-
-        this.players[sessionId] = style_player;
-        
-      
-
-    
+      this.physics.world.enable(style_player);
+      this.add.existing(style_player);
+      this.physics.add.existing(style_player);
+      this.players[sessionId] = style_player;
 
       if (sessionId === this.room.sessionId) {
         //current player is need to bind the camera to your current player (the player that you use in the game)
@@ -94,6 +91,7 @@ export default class HelloWorldScene extends Phaser.Scene {
       }
 
       player.onChange = (changes: any) => {
+        
         //console.log("\t\t----- è cambiato qualcosa", changes);
         for (let id in this.players) {
           //updates of position of every players and current player
@@ -112,10 +110,6 @@ export default class HelloWorldScene extends Phaser.Scene {
         
             }
           }
-         
-         
-          
-
         }
       };
     };
@@ -143,19 +137,19 @@ export default class HelloWorldScene extends Phaser.Scene {
   async update() {
     if (this.cursors) {
       if (this.cursors.D.isDown) {
-        this.room.send("move", { x: +5 });
+        this.room.send("move", { x: +1 });
         //this.currentPlayer.x += 5;
       }
       if (this.cursors.A.isDown) {
-        this.room.send("move", { x: -5 });
+        this.room.send("move", { x: -1 });
         //this.currentPlayer.x -= 5;
       }
       if (this.cursors.W.isDown) {
-        this.room.send("move", { y: -5 });
+        this.room.send("move", { y: -1 });
         //this.currentPlayer.y -= 5;
       }
       if (this.cursors.S.isDown) {
-        this.room.send("move", { y: +5 });
+        this.room.send("move", { y: +1 });
         //this.currentPlayer.y += 5;
       }
     }

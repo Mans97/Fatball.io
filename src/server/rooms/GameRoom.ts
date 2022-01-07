@@ -12,6 +12,7 @@ export class Player extends Entity {
     super();
     this.radius = 20;
     this.minimun_radius = 15
+    this.maximum_radius = 250;
   }
 }
 
@@ -63,13 +64,23 @@ export class State extends Schema {
       if (player.x > WORLD_SIZE) {
         player.x = WORLD_SIZE;
       } else {
-        player.x += movement.x * 1;
+        if (player.radius>=15 && player.radius<=80)
+          player.x += movement.x * 5;
+        else if (player.radius>80 && player.radius<=160)
+          player.x += movement.x * 4;
+        else
+          player.x += movement.x * 3;
       }
       //boundaries for x
       if (player.x < 0) { 
         player.x = 0;
       } else {
-        player.x += movement.x * 1;
+        if (player.radius>=15 && player.radius<=80)
+          player.x += movement.x * 5;
+        else if (player.radius>80 && player.radius<=160)
+          player.x += movement.x * 4;
+        else
+          player.x += movement.x * 3;
       }
     
     } else if (movement.y) {
@@ -77,13 +88,23 @@ export class State extends Schema {
       if (player.y > WORLD_SIZE) {
         player.y = WORLD_SIZE;
       } else {
-        player.y += movement.y * 1;
+        if (player.radius>=15 && player.radius<=80)
+          player.y += movement.y * 5;
+        else if (player.radius>80 && player.radius<=160)
+          player.y += movement.y * 4;
+        else
+          player.y += movement.y * 3;
       }
       //boundaries for y
       if (player.y < 0) { 
         player.y = 0;
       } else {
-        player.y += movement.y * 1;
+        if (player.radius>=15 && player.radius<=80)
+          player.y += movement.y * 5;
+        else if (player.radius>80 && player.radius<=160)
+          player.y += movement.y * 4;
+        else
+          player.y += movement.y * 3;
       }
     }
   }
@@ -120,7 +141,8 @@ export class State extends Schema {
               //console.log("\t\tCollision")
               deadPlayers.push(collideSessionId)// this elements will be removed
               this.createFood()
-              player.radius += collidePlayer.radius //increase the radius of player
+              if (player.radius <= player.maximum_radius)
+              player.radius += collidePlayer.radius - 5 //increase the radius of player
 
             }
 
@@ -164,7 +186,6 @@ export class GameRoom extends Room<State> {
     this.onMessage("move", (client, data) => {
       //console.log("StateHandlerRoom received message from",client.sessionId,":",data);
       this.state.movePlayer(client.sessionId, data);
-
     });
     this.setSimulationInterval(() => this.state.update()) //default is 60fps
   }
