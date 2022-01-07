@@ -2,6 +2,8 @@ import { Room, Client, RedisPresence } from "colyseus";
 //import { State } from "./schema/State";
 import { Schema, type, MapSchema } from "@colyseus/schema";
 import { Entity } from "./schema/Entity";
+import { generateId } from "colyseus";
+
 
 const WORLD_SIZE = 2000;
 
@@ -16,6 +18,9 @@ export class State extends Schema {
   @type({ map: Entity })
   players = new MapSchema<Entity>();
 
+  //@type({ map: Entity })
+  //foods = new MapSchema<Entity>();
+
   createPlayer(sessionId: string) {
     const color = Number(
       "0x" + Math.floor(Math.random() * 16777215).toString(16)
@@ -24,8 +29,8 @@ export class State extends Schema {
     this.players.set(
       sessionId,
       new Player().assign({
-        x: Math.random() * 500,
-        y: Math.random() * 500,
+        x: Math.random() * WORLD_SIZE,
+        y: Math.random() * WORLD_SIZE,
         color: color,
         border_color: color,
         name: sessionId,
@@ -34,8 +39,13 @@ export class State extends Schema {
     );
   }
 
-  removePlayer(sessionId: string) {
-    this.players.delete(sessionId);
+  createFood(){
+    const food = new Entity().assign({
+      x: Math.random() * WORLD_SIZE,
+      y: Math.random() * WORLD_SIZE,
+      radius: 10
+    })
+    this.players.set(generateId(), food)
   }
 
   movePlayer(sessionId: string, movement: any) {
@@ -60,7 +70,7 @@ export class State extends Schema {
       // if (player.y < 0) { player.y = 0; }
       // if (player.y > WORLD_SIZE) { player.y = WORLD_SIZE; }
     } else if (movement.y) {
-      console.log(movement);
+      //console.log(movement);
       if (player.y > WORLD_SIZE) {
         player.y = WORLD_SIZE;
       } else {
@@ -101,6 +111,10 @@ export class State extends Schema {
 export class GameRoom extends Room<State> {
   onCreate(options: any) {
     this.setState(new State());
+    //add food
+    for (let i = 0; i<15; i++){
+      this.state.createFood()
+    }
 
     /*this.onMessage("keydown", (client, message) => { //keydown è il nome del message che arriva al server 
         this.broadcast('keydown', message, { //lo invio a tutti
