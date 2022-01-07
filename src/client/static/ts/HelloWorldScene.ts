@@ -51,6 +51,27 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     console.log(this.room.sessionId); //id of connectedplayes, esiste anche room.name
 
+    var reticle = this.physics.add.sprite(500, 400, "target");
+    reticle
+      .setOrigin(0.5,0.5)
+      .setDisplaySize(25, 25)
+      .setCollideWorldBounds(false);
+
+    console.log("reticleee: ",reticle)
+
+    this.input.on(
+      "pointermove",
+      (pointer: { movementX: number; movementY: number }) => {
+        if (game.input.mouse.locked) {
+          // Move reticle with mouse
+          reticle.x += pointer.movementX;
+          reticle.y += pointer.movementY;
+        }
+      },
+      this
+    );
+
+
     this.room.state.players.onAdd = (player: any, sessionId: string) => {
       //console.log("\tenter in onAdd");
       var circle_player: Phaser.GameObjects.Arc;
@@ -108,27 +129,6 @@ export default class HelloWorldScene extends Phaser.Scene {
         console.log("CIAO CLIENT, il tuo giocatore è: ", this.currentPlayer);
         //follow player with the camera
         this.cameras.main.startFollow(this.currentPlayer);
-
-        var reticle = this.physics.add.sprite(500, 400, "target");
-        reticle
-          .setOrigin(this.currentPlayer.x, this.currentPlayer.y)
-          .setDisplaySize(25, 25)
-          .setCollideWorldBounds(false);
-
-        console.log("reticleee: ",reticle)
-
-        this.input.on(
-          "pointermove",
-          (pointer: { movementX: number; movementY: number }) => {
-            if (game.input.mouse.locked) {
-              // Move reticle with mouse
-              reticle.x += pointer.movementX;
-              reticle.y += pointer.movementY;
-            }
-          },
-          this
-        );
-
       }
 
       player.onChange = (changes: any) => {
