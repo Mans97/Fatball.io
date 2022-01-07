@@ -49,26 +49,25 @@ export class State extends Schema {
   }
 
   movePlayer(sessionId: string, movement: any) {
-    console.log("MOVEMENT: ", movement);
+    //console.log("MOVEMENT: ", movement);
     const player = this.players.get(sessionId);
     if (!player){ //dead players cannot move
       console.log("\t\t Dead player cannot move! ")
       return
     }
     if (movement.x) {
-
       if (player.x > WORLD_SIZE) {
         player.x = WORLD_SIZE;
       } else {
         player.x += movement.x * 1;
       }
-      if (player.x < 0) { //boundaries for x
+      //boundaries for x
+      if (player.x < 0) { 
         player.x = 0;
       } else {
         player.x += movement.x * 1;
       }
-      // if (player.y < 0) { player.y = 0; }
-      // if (player.y > WORLD_SIZE) { player.y = WORLD_SIZE; }
+    
     } else if (movement.y) {
       //console.log(movement);
       if (player.y > WORLD_SIZE) {
@@ -76,7 +75,8 @@ export class State extends Schema {
       } else {
         player.y += movement.y * 1;
       }
-      if (player.y < 0) { //boundaries for y
+      //boundaries for y
+      if (player.y < 0) { 
         player.y = 0;
       } else {
         player.y += movement.y * 1;
@@ -94,7 +94,41 @@ export class State extends Schema {
         deadPlayers.push(sessionId)
         return
       }
+     
+      this.players.forEach((collidePlayer, collideSessionId) =>{
+        if(collidePlayer == player){ //no collision allowed with the same player (current player)
+          return
+        }
+
+        /** you can eat only the food, so your radius has to be more bigger than the collide object and
+         * the collided object CANNOT be an other player. So the radius of the
+         * collided object has to be 10 (only the food will have 10 of radius).
+         * 
+         * ** The minimun radius of players will be > 10 (for exaple 15 is a good minimun radius for every player)
+         */
+        if (player.radius > collidePlayer.radius && collidePlayer.radius == 10){ 
+            //check if there is the collision (use of distance between the objects)
+            /**
+             * If the distance between the objects is less than the sum of the two 
+             * radius, there is a collision because the objects are overlapped
+             */
+            if((player.radius + collidePlayer.radius) >= Entity.distance(player, collidePlayer) ){ //if the sum of two radius is more bigger than the distance, there is the collision
+              //console.log("\t\tCollision")
+              deadPlayers.push(collideSessionId)// this elements will be removed
+              this.createFood()
+
+            }
+
+
+        }
+
+
+      })
+
+      
+
     })
+
 
 
 
@@ -112,7 +146,7 @@ export class GameRoom extends Room<State> {
   onCreate(options: any) {
     this.setState(new State());
     //add food
-    for (let i = 0; i<15; i++){
+    for (let i = 0; i<25; i++){
       this.state.createFood()
     }
 

@@ -45,18 +45,35 @@ export default class HelloWorldScene extends Phaser.Scene {
     this.room.state.players.onAdd = (player: any, sessionId: string) => {
       //console.log("\tenter in onAdd");
       //generate the food
-      if(player.radius == 10){ //only the food can have radius of 10
-        var foods = this.add.circle(player.x, player.y, player.radius, 0xFFFF0B).setStrokeStyle(3, 0xFFFF0B);
-      }else{
-        //create the player with text inside
-        var circle_player = this.add
-          .circle(0, 0, player.radius, player.color)
-          .setStrokeStyle(3, player.border_color);
-        var playerNick = this.add.text(0, 0, 'Pippo', { fontSize: '32px', color: '#000' });
-        playerNick.x = playerNick.x - playerNick.width/2
-        playerNick.y = playerNick.y - playerNick.height/2
+      /*if(player.radius == 10){ //only the food can have radius of 10
+        var style_player = this.add.circle(0,0, player.radius, 0xFFFF0B).setStrokeStyle(3, 0xFFFF0B);
+        this.physics.world.enable(style_player);
+        this.add.existing(style_player);
+        this.physics.add.existing(style_player);
+        this.players[sessionId] =  new Phaser.GameObjects.Container(this, player.x, player.y, [style_player])
+        console.log(this.players[sessionId])
+      }*/
+      
+       
+        if (player.radius != 10){
+           //create the player with text inside
+            var circle_player = this.add
+            .circle(0, 0, player.radius, player.color)
+            .setStrokeStyle(3, player.border_color);
+        
+          var playerNick = this.add.text(0, 0, 'Pippo', { fontSize: '32px', color: '#000' });
+          playerNick.x = playerNick.x - playerNick.width/2
+          playerNick.y = playerNick.y - playerNick.height/2
+          var style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [circle_player,playerNick])
 
-        var style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [circle_player,playerNick])
+        }else{
+          var food_style = this.add
+          .circle(0, 0, player.radius, 0xEEA635)
+          .setStrokeStyle(3, 0xEEA635);
+          var style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [food_style])
+
+        }
+
 
         this.physics.world.enable(style_player);
         this.add.existing(style_player);
@@ -64,7 +81,8 @@ export default class HelloWorldScene extends Phaser.Scene {
 
 
         this.players[sessionId] = style_player;
-      }
+        
+      
 
     
 
@@ -79,8 +97,10 @@ export default class HelloWorldScene extends Phaser.Scene {
       player.onChange = (changes: any) => {
         //console.log("\t\t----- è cambiato qualcosa", changes);
         for (let id in this.players) {
+          //updates of position of every players and current player
           this.players[id].x = this.room.state.players[id].x;
           this.players[id].y = this.room.state.players[id].y;
+
         }
       };
     };
