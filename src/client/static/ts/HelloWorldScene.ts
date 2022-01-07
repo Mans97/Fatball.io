@@ -8,6 +8,7 @@ export default class HelloWorldScene extends Phaser.Scene {
   private declare cursors: any;
   players: { [id: string]: Phaser.GameObjects.Container } = {};
   currentPlayer: Phaser.GameObjects.Container;
+  foods: { [id: string]: Phaser.GameObjects.Container } = {};
   private declare circle_object: any;
   private client: Colyseus.Client;
   room: any;
@@ -42,24 +43,29 @@ export default class HelloWorldScene extends Phaser.Scene {
     console.log(this.room.sessionId); //id of connectedplayes, esiste anche room.name
 
     this.room.state.players.onAdd = (player: any, sessionId: string) => {
-    //console.log("\tenter in onAdd");
+      //console.log("\tenter in onAdd");
+      //generate the food
+      if(player.radius == 10){ //only the food can have radius of 10
+        var foods = this.add.circle(player.x, player.y, player.radius, 0xFFFF0B).setStrokeStyle(3, 0xFFFF0B);
+      }else{
+        //create the player with text inside
+        var circle_player = this.add
+          .circle(0, 0, player.radius, player.color)
+          .setStrokeStyle(3, player.border_color);
+        var playerNick = this.add.text(0, 0, 'Pippo', { fontSize: '32px', color: '#000' });
+        playerNick.x = playerNick.x - playerNick.width/2
+        playerNick.y = playerNick.y - playerNick.height/2
 
-      //create the player with text inside
-      var circle_player = this.add
-        .circle(0, 0, player.radius, player.color)
-        .setStrokeStyle(3, player.border_color);
-      var playerNick = this.add.text(0, 0, 'Pippo', { fontSize: '32px', color: '#000' });
-      playerNick.x = playerNick.x - playerNick.width/2
-      playerNick.y = playerNick.y - playerNick.height/2
+        var style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [circle_player,playerNick])
 
-      var style_player = new Phaser.GameObjects.Container(this, player.x, player.y, [circle_player,playerNick])
-
-      this.physics.world.enable(style_player);
-      this.add.existing(style_player);
-      this.physics.add.existing(style_player);
+        this.physics.world.enable(style_player);
+        this.add.existing(style_player);
+        this.physics.add.existing(style_player);
 
 
-      this.players[sessionId] = style_player;
+        this.players[sessionId] = style_player;
+      }
+
     
 
       if (sessionId === this.room.sessionId) {
@@ -80,14 +86,14 @@ export default class HelloWorldScene extends Phaser.Scene {
     };
 
     this.room.state.players.onRemove = ( _: any, sessionId: any) => {
-      console.log("\tREMOVE");
+      console.log("\tREMOVE", sessionId);
       this.players[sessionId].destroy();
       delete this.players[sessionId];
     };
 
-    this.room.onStateChange((state: any) => {
+    /*this.room.onStateChange((state: any) => {
       console.log("the room state has been updated:", state);
-    });
+    });*/
 
     //message coming from the server
     /*this.room.onMessage('keydown', (message: any) => {
