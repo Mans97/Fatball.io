@@ -1,6 +1,6 @@
 
 import { Schema, type } from "@colyseus/schema";
-import { Client, LobbyRoom } from "colyseus";
+import { Client, LobbyRoom} from "colyseus";
 
 class LobbyState extends Schema {
     @type('number') connectionsCounter : number = 0; // counter number of total players
@@ -9,9 +9,13 @@ class LobbyState extends Schema {
 
 export class LobbyGameRoom extends LobbyRoom {
 
+    // lobbyRoomChannel set a channel in redis for lobbies
+    lobbyRoomChannel = "$LobbyRoomChannel"
+    
     // metadata
     private usernameList : string[] = []
     private lobbyCounter : number = 0
+    private lobbyName : string;
     removeUsername(username : string ){
         this.usernameList = this.usernameList.filter(function(e) { return e !== username })
     }
@@ -19,7 +23,8 @@ export class LobbyGameRoom extends LobbyRoom {
     async onCreate(options : any) {
         await super.onCreate(options);
         this.setState(new LobbyState()); // init the distributed state
-        this.roomId = options.roomId
+        this.lobbyName = options.roomId
+        this.presence
         this.onMessage("usernamesRequest", (client, message) => {
             this.broadcast("+", this.usernameList) // broadcast on group of players for missplaced update
         });
