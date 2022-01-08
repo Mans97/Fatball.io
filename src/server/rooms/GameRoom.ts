@@ -15,6 +15,21 @@ export class Player extends Entity {
   }
 }
 
+export class Bullet{
+  speed = 1;
+  born = 0;
+  direction = 0;
+  xSpeed = 0;
+  ySpeed = 0;
+  constructor() {
+    this.speed = 1;
+    this.born = 0;
+    this.direction = 0;
+    this.xSpeed = 0;
+    this.ySpeed = 0;
+  }
+}
+
 export class State extends Schema {
   @type({ map: Entity })
   players = new MapSchema<Entity>();
@@ -162,6 +177,14 @@ export class State extends Schema {
      
     });
   }
+
+
+  shot_a_bullet(sessionId: string, shot_Data: any){
+    console.log("start the shot");
+  }
+
+
+
 }
 
 export class GameRoom extends Room<State> {
@@ -178,10 +201,22 @@ export class GameRoom extends Room<State> {
         }) 
     });*/
 
+    //on move
     this.onMessage("move", (client, data) => {
-      //console.log("StateHandlerRoom received message from",client.sessionId,":",data);
+      //console.log("Received message from",client.sessionId,":",data);
       this.state.movePlayer(client.sessionId, data);
     });
+
+    //on shot
+    this.onMessage("shot", (client, data) => {
+      console.log("Received message from",client.sessionId,":",data);
+      if(this.state.players.get(client.sessionId).your_bullets >= 1){ //check if it has bullets
+        this.state.shot_a_bullet(client.sessionId, data);
+      }else{
+        console.log("Received message from",client.sessionId,": NO BULLETS, YOU CANNOT SHOT");
+      }
+    });
+
     this.setSimulationInterval(() => this.state.update()); //default is 60fps
   }
 

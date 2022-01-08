@@ -199,11 +199,11 @@ export default class HelloWorldScene extends Phaser.Scene {
       delete this.players[sessionId];
     };
 
-
+    
     // Fires bullet from player on left click of mouse
-    this.input.on('pointerdown', function (pointer: any, time: any, lastFired: any) {
+    this.input.on('pointerdown', (pointer: any, time: any, lastFired: any) => {
 
-      //this.room.send("move", { reticle_x: 3333, reticle_y: 23 });
+      this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, reticle_x: this.reticle.x, reticle_y: this.reticle.y });
 
       //*************************************************
       // *************** VECCHIA VERSIONE ***************
