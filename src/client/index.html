@@ -93,8 +93,9 @@
             // controls for not empty fields (it is never null but "")
             if (_username == "" || _roomName == "") {
                 alert('You need to insert username and room name to join or create!') // TODO: Update it with a modal message
-                return 0
+                return false
             }
+            return true
         }
 
         /**
@@ -102,7 +103,7 @@
          * lobby status on a single instance (and shared state) 
          */
         function createAndJoin() {
-            precondition() // calling pre-conditions
+            if(!precondition()) return 0; // calling pre-conditions
             console.log(`Connection of ${_username} on ${_roomName}`) //
             var room = client.joinOrCreate("lobby_room", // if not exists, onCreate and than onJoin
                 {
@@ -223,6 +224,10 @@
                 console.log('Game Ready, it should start...')
                 buttonGame.disabled = false
                 buttonGame.innerHTML = "Start"
+                buttonGame.onclick = function(){
+                    console.log('Start the Game!!!')
+                    window.location.href = "http://localhost:8000"
+                }
                 buttonGame.style.backgroundColor = "#0275d8" // don't scare, it is the primary color
             } else {
                 console.log('Game cannot start, waiting player...');
