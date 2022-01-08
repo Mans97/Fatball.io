@@ -36,7 +36,7 @@ export class State extends Schema {
         color: color,
         border_color: color,
         name: sessionId,
-        your_bullets: 5,
+        your_bullets: 1,
         points: 0,
         minimun_radius: 15, //if reach this radius, the player will die
       })
@@ -144,14 +144,22 @@ export class State extends Schema {
             this.createFood();
             if (player.radius <= player.maximum_radius)
               player.radius += collidePlayer.radius - 5; //increase the radius of player
+              player.your_bullets += 1 //increase the bullets of the player
           }
         }
       });
     });
+    
     // delete all dead entities
     deadPlayers.forEach((sessionId) => {
-      this.players.delete(sessionId);
-      console.log("RIMOZIONE PLAYER: ", sessionId);
+      if (this.players.get(sessionId).radius == 10){
+        this.players.delete(sessionId);
+        console.log("One piece of food remove: ", sessionId);
+      }else{
+        this.players.delete(sessionId);
+        console.log("Player removed from game: ", sessionId);
+      }
+     
     });
   }
 }

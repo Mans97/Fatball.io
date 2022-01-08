@@ -14,6 +14,9 @@ export default class HelloWorldScene extends Phaser.Scene {
   private client: Colyseus.Client;
   room: any;
   reticle: any;
+
+  bullets_value: number = 0;
+  bulletsText: any;
   constructor() {
     super("hello-world");
   }
@@ -55,21 +58,16 @@ export default class HelloWorldScene extends Phaser.Scene {
           .setDisplaySize(25, 25)
           .setCollideWorldBounds(false);
 
-
     //reticle initial settings
     game.canvas.addEventListener("mousedown", function () {
       game.input.mouse.requestPointerLock();
-      // if(first_click){ //setting the reticle where you have clicked only for the first time
-      //   reticle.x = game.input.mousePointer.x;
-      //   reticle.y = game.input.mousePointer.y;
-      //   first_click = false;
-      // }
       
     });
-    // if (!game.input.mouse.locked) {
-    //   first_click = true;
-    // }
-      
+
+    //setting the bullets informations as text
+    this.bulletsText = this.add.text(16, 16, 'score: 0', { fontSize: '32px'});
+    //this.bulletsText.setText('Your Bullets: ' + this.bullets_value);
+
     
   
     this.input.on("pointermove",(pointer: { movementX: number; movementY: number }) => {
@@ -94,7 +92,6 @@ export default class HelloWorldScene extends Phaser.Scene {
                this.reticle.y = this.currentPlayer.y+300;
            else if (distY < -300)
                this.reticle.y = this.currentPlayer.y-300;
-
         }
       },
       this
@@ -158,6 +155,8 @@ export default class HelloWorldScene extends Phaser.Scene {
         console.log("CIAO CLIENT, il tuo giocatore è: ", this.currentPlayer);
         //follow player with the camera
         this.cameras.main.startFollow(this.currentPlayer);
+
+        
       }
 
       player.onChange = (changes: any) => {
@@ -166,7 +165,6 @@ export default class HelloWorldScene extends Phaser.Scene {
           //updates of position of every players and current player
           this.players[id].x = this.room.state.players[id].x;
           this.players[id].y = this.room.state.players[id].y;
-
 
           //getting from data of ARC
           if (this.room.state.players[id].radius != 10) {
@@ -179,11 +177,17 @@ export default class HelloWorldScene extends Phaser.Scene {
               //update of the radius
 
               if(circle_player){
-                circle_player.setRadius(this.room.state.players[id].radius);
+                circle_player.setRadius(this.room.state.players[sessionId].radius);
+                console.log("RAGGIO GIOCATORE ",id," :", this.players[id].getData('radius'), " and radius of circle ", circle_player.radius , "radius from backend ", this.room.state.players[id].radius)
               }
             }
           }
         }
+        
+        //getting the bullets
+        this.bullets_value = this.room.state.players[sessionId].your_bullets;
+        //console.log("bullets: ", this.bullets_value)
+
       };
     };
 
@@ -305,8 +309,6 @@ constrainReticle(reticle: any, radius: any){
   async update() {
 
      // Camera position is average between reticle and player positions
-     console.log("1:", this.currentPlayer.x)
-     console.log("2 ", this.reticle.x)
      if(this.currentPlayer){
       var avgX = ((this.currentPlayer.x+this.reticle.x)/2)-400;
       var avgY = ((this.currentPlayer.y+this.reticle.y)/2)-300;
@@ -317,9 +319,15 @@ constrainReticle(reticle: any, radius: any){
       this.reticle.body.velocity.x = this.currentPlayer.body.velocity.x;
       this.reticle.body.velocity.y = this.currentPlayer.body.velocity.y;
 
+      //updates constraints
       this.constrainReticle(this.reticle, Number(this.currentPlayer.getData('radius')))
+
      }
-    
+
+     //setting the bullet text
+     if (this.bulletsText){
+       this.bulletsText.setText('Your Bullets: ' + this.bullets_value);
+     }
 
 
     if (this.cursors) {
