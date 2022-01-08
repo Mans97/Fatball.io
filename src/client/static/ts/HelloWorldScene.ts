@@ -13,6 +13,7 @@ export default class HelloWorldScene extends Phaser.Scene {
   private declare circle_object: any;
   private client: Colyseus.Client;
   room: any;
+  reticle: any;
   constructor() {
     super("hello-world");
   }
@@ -25,8 +26,8 @@ export default class HelloWorldScene extends Phaser.Scene {
     this.load.setBaseURL('http://labs.phaser.io')
     // var target_path = "/assets/target.png";
     // this.load.image("target", target_path);
-    this.load.image('target', 'assets/particles/blue.png')
-    this.load.image('bullet', 'assets/bullets/bullet39.png')
+    this.load.image('target', 'assets/particles/red.png')
+    //this.load.image('bullet', 'assets/bullets/bullet37.png')
   }
 
   async create() {
@@ -49,8 +50,8 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     console.log(this.room.sessionId); //id of connectedplayes, esiste anche room.name
 
-    var reticle = this.physics.add.sprite(500, 400, "target");
-    reticle.setOrigin(0.5,0.5)
+    this.reticle = this.physics.add.sprite(500, 400, "target");
+    this.reticle.setOrigin(0.5,0.5)
           .setDisplaySize(25, 25)
           .setCollideWorldBounds(false);
 
@@ -58,16 +59,16 @@ export default class HelloWorldScene extends Phaser.Scene {
     //reticle initial settings
     game.canvas.addEventListener("mousedown", function () {
       game.input.mouse.requestPointerLock();
-      if(first_click){ //setting the reticle where you have clicked only for the first time
-        reticle.x = game.input.mousePointer.x;
-        reticle.y = game.input.mousePointer.y;
-        first_click = false;
-      }
+      // if(first_click){ //setting the reticle where you have clicked only for the first time
+      //   reticle.x = game.input.mousePointer.x;
+      //   reticle.y = game.input.mousePointer.y;
+      //   first_click = false;
+      // }
       
     });
-    if (!game.input.mouse.locked) {
-      first_click = true;
-    }
+    // if (!game.input.mouse.locked) {
+    //   first_click = true;
+    // }
       
     
   
@@ -75,8 +76,24 @@ export default class HelloWorldScene extends Phaser.Scene {
         if (game.input.mouse.locked) {
           
           // Move reticle with mouse
-          reticle.x += pointer.movementX;
-          reticle.y += pointer.movementY;
+          this.reticle.x += pointer.movementX;
+          this.reticle.y += pointer.movementY;
+          
+          //*********** "constraint" of reticle *************** */
+           // Only works when camera follows player
+           var distX = this.reticle.x - this.currentPlayer.x;
+           var distY = this.reticle.y - this.currentPlayer.y;
+ 
+           // Ensures reticle cannot be moved offscreen
+           if (distX > 500)
+               this.reticle.x = this.currentPlayer.x+500;
+           else if (distX < -500)
+               this.reticle.x = this.currentPlayer.x-500;
+ 
+           if (distY > 300)
+               this.reticle.y = this.currentPlayer.y+300;
+           else if (distY < -300)
+               this.reticle.y = this.currentPlayer.y-300;
 
         }
       },
@@ -259,11 +276,56 @@ function enemyCollisionCallback(enemyCollided, player_principal){
        //check which radius in bigger
     }
 }*/
+constrainReticle(reticle: any, radius: any){
+  var distX = reticle.x-this.currentPlayer.x; // X distance between player & reticle
+  var distY = reticle.y-this.currentPlayer.y; // Y distance between player & reticle
+
+  // Ensures reticle cannot be moved offscreen
+  if (distX > 500){
+      reticle.x = this.currentPlayer.x+500;
+  }else if (distX < -500){
+      reticle.x = this.currentPlayer.x-500;
+  }
+  if (distY > 300){
+      reticle.y = this.currentPlayer.y+300;
+  }else if (distY < -300){
+      reticle.y = this.currentPlayer.y-300;
+  }
+  // Ensures reticle cannot be moved further than dist(radius) from player
+  var distBetween = Phaser.Math.Distance.Between(this.currentPlayer.x, this.currentPlayer.y, reticle.x, reticle.y);
+  if (distBetween > radius){
+      // Place reticle on perimeter of circle on line intersecting player & reticle
+      var scale = distBetween/radius;
+
+      reticle.x = this.currentPlayer.x + (reticle.x-this.currentPlayer.x)/scale;
+      reticle.y = this.currentPlayer.y + (reticle.y-this.currentPlayer.y)/scale;
+  }
+}
 
   async update() {
+
+     // Camera position is average between reticle and player positions
+     console.log("1:", this.currentPlayer.x)
+     console.log("2 ", this.reticle.x)
+     if(this.currentPlayer){
+      var avgX = ((this.currentPlayer.x+this.reticle.x)/2)-400;
+      var avgY = ((this.currentPlayer.y+this.reticle.y)/2)-300;
+      this.cameras.main.scrollX = avgX;
+      this.cameras.main.scrollY = avgY;
+  
+      // Make reticle move with player
+      this.reticle.body.velocity.x = this.currentPlayer.body.velocity.x;
+      this.reticle.body.velocity.y = this.currentPlayer.body.velocity.y;
+
+      this.constrainReticle(this.reticle, Number(this.currentPlayer.getData('radius')))
+     }
+    
+
+
     if (this.cursors) {
       if (this.cursors.D.isDown) {
         this.room.send("move", { x: +1 });
+        this.reticle.x += 1;
         //this.currentPlayer.x += 5;
       }
       if (this.cursors.A.isDown) {
