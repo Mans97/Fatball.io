@@ -14,9 +14,14 @@ export default class HelloWorldScene extends Phaser.Scene {
   private client: Colyseus.Client;
   room: any;
   reticle: any;
-
+  private pointer: Phaser.Input.Pointer;
   bullets_value: number = 0;
   bulletsText: any;
+
+
+  //avoid to shoot multiple times with a single left button press
+  isDown_timeout: Number;
+
   constructor() {
     super("hello-world");
   }
@@ -34,10 +39,13 @@ export default class HelloWorldScene extends Phaser.Scene {
   }
 
   async create() {
+
+    this.isDown_timeout = new Date().getTime();
+
     var first_click: Boolean = true;
     //setting boards and input keyboards
     var game = this.game;
-
+    this.pointer = this.input.activePointer;
     var bound_rect = this.add.rectangle(1000, 1000, 6000, 6000); // draw rectangle around bounds
     bound_rect.setStrokeStyle(4000, 0x343a40); // border of 4000 px to the playground, color gray
 
@@ -53,16 +61,16 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     console.log(this.room.sessionId); //id of connectedplayes, esiste anche room.name
 
-    this.reticle = this.physics.add.sprite(500, 400, "target");
-    this.reticle.setOrigin(0.5,0.5)
-          .setDisplaySize(25, 25)
-          .setCollideWorldBounds(false);
+    // this.reticle = this.physics.add.sprite(500, 400, "target");
+    // this.reticle.setOrigin(0.5,0.5)
+    //       .setDisplaySize(25, 25)
+    //       .setCollideWorldBounds(false);
 
     //reticle initial settings
-    game.canvas.addEventListener("mousedown", function () {
-      game.input.mouse.requestPointerLock();
+    // game.canvas.addEventListener("mousedown", function () {
+    //   game.input.mouse.requestPointerLock();
       
-    });
+    // });
 
     //setting the bullets informations as text
     this.bulletsText = this.add.text(16, 16, 'score: 0', { fontSize: '32px'});
@@ -70,32 +78,32 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     
   
-    this.input.on("pointermove",(pointer: { movementX: number; movementY: number }) => {
-        if (game.input.mouse.locked) {
+    // this.input.on("pointermove",(pointer: { movementX: number; movementY: number }) => {
+    //     if (game.input.mouse.locked) {
           
-          // Move reticle with mouse
-          this.reticle.x += pointer.movementX;
-          this.reticle.y += pointer.movementY;
+    //       // Move reticle with mouse
+    //       this.reticle.x += pointer.movementX;
+    //       this.reticle.y += pointer.movementY;
           
-          //*********** "constraint" of reticle *************** */
-           // Only works when camera follows player
-           var distX = this.reticle.x - this.currentPlayer.x;
-           var distY = this.reticle.y - this.currentPlayer.y;
+    //       //*********** "constraint" of reticle *************** */
+    //        // Only works when camera follows player
+    //        var distX = this.reticle.x - this.currentPlayer.x;
+    //        var distY = this.reticle.y - this.currentPlayer.y;
  
-           // Ensures reticle cannot be moved offscreen
-           if (distX > 500)
-               this.reticle.x = this.currentPlayer.x+500;
-           else if (distX < -500)
-               this.reticle.x = this.currentPlayer.x-500;
+    //        // Ensures reticle cannot be moved offscreen
+    //        if (distX > 500)
+    //            this.reticle.x = this.currentPlayer.x+500;
+    //        else if (distX < -500)
+    //            this.reticle.x = this.currentPlayer.x-500;
  
-           if (distY > 300)
-               this.reticle.y = this.currentPlayer.y+300;
-           else if (distY < -300)
-               this.reticle.y = this.currentPlayer.y-300;
-        }
-      },
-      this
-    );
+    //        if (distY > 300)
+    //            this.reticle.y = this.currentPlayer.y+300;
+    //        else if (distY < -300)
+    //            this.reticle.y = this.currentPlayer.y-300;
+    //     }
+    //   },
+    //   this
+    // );
 
 
     this.room.state.players.onAdd = (player: any, sessionId: string) => {
@@ -198,8 +206,7 @@ export default class HelloWorldScene extends Phaser.Scene {
     // Fires bullet from player on left click of mouse
     this.input.on('pointerdown', (pointer: any, time: any, lastFired: any) => {
 
-      this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, 
-                               reticle_x: this.reticle.x, reticle_y: this.reticle.y });
+      
 
       // ************************************************
       // *************** VECCHIA VERSIONE ***************
@@ -247,34 +254,7 @@ export default class HelloWorldScene extends Phaser.Scene {
       }
     }
 
-    function enemyCollisionCallback(enemyCollided, player_principal){
-      if (enemyCollided.active === true && player_principal.active === true){
-        console.log(player_principal.radius)
-        if(player_principal.radius>=enemyCollided.radius){
-          enemyCollided.setActive(false).setVisible(false);
-          player_principal.setRadius(player_principal.radius + enemyCollided.radius)
-          /*******************************************
-           *                                          | 
-           *                                          |
-           *   GESTIRE COSA SUCCEDE AL NEMICO QUI     |
-           *                                          |
-           *                                          | 
-           ********************************************
-        }else{
-          player_principal.setActive(false).setVisible(false);
-          arrow_pointer.setActive(false).setVisible(false);
-
-          /*************************************
-           *                                   | 
-           *                                   |
-           *   GESTIRE STATO GAME OVER QUI     |
-           *                                   |
-           *                                   | 
-           ************************************
-        }
-      //check which radius in bigger
-      }
-    }*/
+    GESTIRE RESPOWN DEL GIOCATORE*/
 
 
   constrainReticle(reticle: any, radius: any){
@@ -303,54 +283,69 @@ export default class HelloWorldScene extends Phaser.Scene {
     }
   }
 
+  //to debugging the pointer.isDown in update() function
+  i: Number = 0;
+
   async update() {
 
     // Camera position is average between reticle and player positions
-    if(this.currentPlayer){
-      var avgX = ((this.currentPlayer.x+this.reticle.x)/2)-400;
-      var avgY = ((this.currentPlayer.y+this.reticle.y)/2)-300;
-      this.cameras.main.scrollX = avgX;
-      this.cameras.main.scrollY = avgY;
+    // if(this.currentPlayer){
+    //   var avgX = ((this.currentPlayer.x+this.reticle.x)/2)-400;
+    //   var avgY = ((this.currentPlayer.y+this.reticle.y)/2)-300;
+    //   this.cameras.main.scrollX = avgX;
+    //   this.cameras.main.scrollY = avgY;
 
-      // Make reticle move with player
-      this.reticle.body.velocity.x = this.currentPlayer.body.velocity.x;
-      this.reticle.body.velocity.y = this.currentPlayer.body.velocity.y;
+    //   // Make reticle move with player
+    //   this.reticle.body.velocity.x = this.currentPlayer.body.velocity.x;
+    //   this.reticle.body.velocity.y = this.currentPlayer.body.velocity.y;
 
-      //updates constraints
-      this.constrainReticle(this.reticle, Number(this.currentPlayer.getData('radius')))
-    }
+    //   //updates constraints
+    //   this.constrainReticle(this.reticle, Number(this.currentPlayer.getData('radius')))
+    // }
 
     //setting the bullet text
     if (this.bulletsText){
       this.bulletsText.setText('Your Bullets: ' + this.bullets_value);
     }
 
+    var time = new Date().getTime() - Number(this.isDown_timeout);
+    
+    if (this.pointer.isDown){
+      if (time > 200){
+        //for debugging print i to not overlap all the logs
+        console.log("shoot", this.i);
+        this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, 
+          reticle_x: this.pointer.downX, reticle_y: this.pointer.downY });
+        this.i++;
+        this.isDown_timeout = new Date().getTime();
+      }
+    }
+
+    
+
+    
+
+    var time = new Date().getTime()
 
     if (this.cursors) {
 
       if (this.cursors.D.isDown) {
         this.room.send("move", { x: +1 });
-        // impostare la velocità del reticle prendendola da backend
-        this.reticle.x += 5;
         // this.currentPlayer.x += 5;
       }
 
       if (this.cursors.A.isDown) {
         this.room.send("move", { x: -1 });
-        // impostare la velocità del reticle prendendola da backend
-        this.reticle.x -= 5;
         //this.currentPlayer.x -= 5;
       }
 
       if (this.cursors.W.isDown) {
         this.room.send("move", { y: -1 });
-        this.reticle.y -= 5;
         //this.currentPlayer.y -= 5;
       }
 
       if (this.cursors.S.isDown) {
         this.room.send("move", { y: +1 });
-        this.reticle.y += 5;
         //this.currentPlayer.y += 5;
       }
     }
