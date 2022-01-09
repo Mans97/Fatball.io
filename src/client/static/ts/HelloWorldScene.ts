@@ -310,7 +310,7 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     var time = new Date().getTime() - Number(this.isDown_timeout);
     
-    if (this.pointer.isDown && this.pointer.){
+    if (this.pointer.isDown){
       if (time > 200){
         //for debugging print i to not overlap all the logs
         console.log("shoot", this.i);
