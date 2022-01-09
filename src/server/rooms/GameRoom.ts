@@ -140,19 +140,13 @@ export class State extends Schema {
          *
          * ** The minimun radius of players will be > 10 (for exaple 15 is a good minimun radius for every player)
          */
-        if (
-          player.radius > collidePlayer.radius &&
-          collidePlayer.radius == 10
-        ) {
+        if (player.radius > collidePlayer.radius && collidePlayer.radius == 10) {
           //check if there is the collision (use of distance between the objects)
           /**
            * If the distance between the objects is less than the sum of the two
            * radius, there is a collision because the objects are overlapped
            */
-          if (
-            player.radius + collidePlayer.radius >=
-            Entity.distance(player, collidePlayer)
-          ) {
+          if (player.radius + collidePlayer.radius >= Entity.distance(player, collidePlayer)) {
             //if the sum of two radius is more bigger than the distance, there is the collision
             //console.log("\t\tCollision")
             deadPlayers.push(collideSessionId); // this elements will be removed
@@ -178,13 +172,10 @@ export class State extends Schema {
     });
   }
 
-
   shot_a_bullet(sessionId: string, shot_Data: any){
     console.log("start the shot");
   }
-
-
-
+  
 }
 
 export class GameRoom extends Room<State> {
