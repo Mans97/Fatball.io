@@ -17,7 +17,6 @@ export default class HelloWorldScene extends Phaser.Scene {
   private pointer: Phaser.Input.Pointer;
   bullets_value: number = 0;
   bulletsText: any;
-
   bullet_object: any;
 
   //avoid to shoot multiple times with a single left button press
@@ -35,7 +34,7 @@ export default class HelloWorldScene extends Phaser.Scene {
     this.load.setBaseURL('http://labs.phaser.io')
     // var target_path = "/assets/target.png";
     // this.load.image("target", target_path);
-    this.load.image('target', 'assets/particles/red.png')
+    this.load.image('bullet', 'assets/particles/red.png')
     //this.load.image('bullet', 'assets/bullets/bullet37.png')
   }
 
@@ -62,50 +61,10 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     console.log(this.room.sessionId); //id of connectedplayes, esiste anche room.name
 
-    // this.reticle = this.physics.add.sprite(500, 400, "target");
-    // this.reticle.setOrigin(0.5,0.5)
-    //       .setDisplaySize(25, 25)
-    //       .setCollideWorldBounds(false);
-
-    //reticle initial settings
-    // game.canvas.addEventListener("mousedown", function () {
-    //   game.input.mouse.requestPointerLock();
-      
-    // });
 
     //setting the bullets informations as text
     this.bulletsText = this.add.text(16, 16, 'score: 0', { fontSize: '32px'});
     //this.bulletsText.setText('Your Bullets: ' + this.bullets_value);
-
-    
-  
-    // this.input.on("pointermove",(pointer: { movementX: number; movementY: number }) => {
-    //     if (game.input.mouse.locked) {
-          
-    //       // Move reticle with mouse
-    //       this.reticle.x += pointer.movementX;
-    //       this.reticle.y += pointer.movementY;
-          
-    //       //*********** "constraint" of reticle *************** */
-    //        // Only works when camera follows player
-    //        var distX = this.reticle.x - this.currentPlayer.x;
-    //        var distY = this.reticle.y - this.currentPlayer.y;
- 
-    //        // Ensures reticle cannot be moved offscreen
-    //        if (distX > 500)
-    //            this.reticle.x = this.currentPlayer.x+500;
-    //        else if (distX < -500)
-    //            this.reticle.x = this.currentPlayer.x-500;
- 
-    //        if (distY > 300)
-    //            this.reticle.y = this.currentPlayer.y+300;
-    //        else if (distY < -300)
-    //            this.reticle.y = this.currentPlayer.y-300;
-    //     }
-    //   },
-    //   this
-    // );
-
 
     this.room.state.players.onAdd = (player: any, sessionId: string) => {
       //console.log("\tenter in onAdd");
@@ -189,6 +148,17 @@ export default class HelloWorldScene extends Phaser.Scene {
               }
             }
           }
+
+          if(player.bullet){
+            console.log(player.bullet.x)
+            console.log(player.bullet.y)
+          }
+
+          // if(this.room.state.bullets){
+          //   console.log(this.room.state.bullets.x)
+          //   console.log(this.room.state.bullets.y)
+          // }
+          
         }
         
         //getting the remaining bullets
@@ -206,8 +176,6 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     // Fires bullet from player on left click of mouse
     this.input.on('pointerdown', (pointer: any, time: any, lastFired: any) => {
-
-      
 
       // ************************************************
       // *************** VECCHIA VERSIONE ***************
@@ -231,9 +199,9 @@ export default class HelloWorldScene extends Phaser.Scene {
     });*/
 
     //message coming from the server
-    /*this.room.onMessage('keydown', (message: any) => {
-            console.log(message)
-        })*/
+    /* this.room.onMessage('shot', (message: any) => {
+            console.log("emaaaaaa", message)
+        }) */
 
     /*this.input.keyboard.on('keydown', (evt: KeyboardEvent) =>{
             this.room.send('keydown', evt.key) //lo mando a Colysius server
@@ -257,53 +225,9 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     GESTIRE RESPOWN DEL GIOCATORE*/
 
-
-  constrainReticle(reticle: any, radius: any){
-    var distX = reticle.x-this.currentPlayer.x; // X distance between player & reticle
-    var distY = reticle.y-this.currentPlayer.y; // Y distance between player & reticle
-
-    // Ensures reticle cannot be moved offscreen
-    if (distX > 500){
-        reticle.x = this.currentPlayer.x+500;
-    }else if (distX < -500){
-        reticle.x = this.currentPlayer.x-500;
-    }
-    if (distY > 300){
-        reticle.y = this.currentPlayer.y+300;
-    }else if (distY < -300){
-        reticle.y = this.currentPlayer.y-300;
-    }
-    // Ensures reticle cannot be moved further than dist(radius) from player
-    var distBetween = Phaser.Math.Distance.Between(this.currentPlayer.x, this.currentPlayer.y, reticle.x, reticle.y);
-    if (distBetween > radius){
-        // Place reticle on perimeter of circle on line intersecting player & reticle
-        var scale = distBetween/radius;
-
-        reticle.x = this.currentPlayer.x + (reticle.x-this.currentPlayer.x)/scale;
-        reticle.y = this.currentPlayer.y + (reticle.y-this.currentPlayer.y)/scale;
-    }
-  }
-
   //to debugging the pointer.isDown in update() function
-  i: Number = 0;
 
   async update() {
-
-    // Camera position is average between reticle and player positions
-    // if(this.currentPlayer){
-    //   var avgX = ((this.currentPlayer.x+this.reticle.x)/2)-400;
-    //   var avgY = ((this.currentPlayer.y+this.reticle.y)/2)-300;
-    //   this.cameras.main.scrollX = avgX;
-    //   this.cameras.main.scrollY = avgY;
-
-    //   // Make reticle move with player
-    //   this.reticle.body.velocity.x = this.currentPlayer.body.velocity.x;
-    //   this.reticle.body.velocity.y = this.currentPlayer.body.velocity.y;
-
-    //   //updates constraints
-    //   this.constrainReticle(this.reticle, Number(this.currentPlayer.getData('radius')))
-    // }
-
     //setting the bullet text
     if (this.bulletsText){
       this.bulletsText.setText('Your Bullets: ' + this.bullets_value);
@@ -314,19 +238,12 @@ export default class HelloWorldScene extends Phaser.Scene {
     if (this.pointer.isDown){
       if (time > 200){
         //for debugging print i to not overlap all the logs
-        console.log("shoot", this.i);
+        console.log("shoot");
         this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, 
           reticle_x: this.pointer.worldX, reticle_y: this.pointer.worldY });
-        this.i++;
         this.isDown_timeout = new Date().getTime();
       }
     }
-
-    
-
-    
-
-    var time = new Date().getTime()
 
     if (this.cursors) {
 

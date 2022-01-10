@@ -1,5 +1,19 @@
 import { Schema, type } from "@colyseus/schema";
 
+
+export class Bullet{
+
+  @type("float64") x: number;
+  @type("float64") y: number;
+  @type("float64") speed: number;
+  @type("int32") born: number;
+  @type("float64") direction: number;
+  @type("float64") xSpeed: number;
+  @type("float64") ySpeed: number;
+  @type("boolean") active: Boolean;
+
+}
+
 export class Entity extends Schema {
   @type("float64") x!: number;
   @type("float64") y!: number;
@@ -11,6 +25,7 @@ export class Entity extends Schema {
   @type("int32") points!: number;
   @type("float32") minimun_radius!: number;
   @type("float32") maximum_radius!: number;
+  bullet!: Bullet;
 
   dead: boolean = false;
   angle: number = 0;
