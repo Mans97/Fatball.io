@@ -17,14 +17,11 @@ export default class HelloWorldScene extends Phaser.Scene {
   private pointer: Phaser.Input.Pointer;
   bullets_value: number = 0;
   bulletsText: any;
-<<<<<<< HEAD
-  bullet_object: any;
-=======
 
+  bullet_object: any;
 
   //avoid to shoot multiple times with a single left button press
   isDown_timeout: Number;
->>>>>>> 633f2bb0157c0a0c0875063de8eb7c4c260d7134
 
   constructor() {
     super("hello-world");
