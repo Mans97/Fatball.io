@@ -17,8 +17,9 @@ export default class HelloWorldScene extends Phaser.Scene {
   private pointer: Phaser.Input.Pointer;
   bullets_value: number = 0;
   bulletsText: any;
-
   bullet_object: any;
+
+
 
   //avoid to shoot multiple times with a single left button press
   isDown_timeout: Number;
@@ -62,49 +63,11 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     console.log(this.room.sessionId); //id of connectedplayes, esiste anche room.name
 
-    // this.reticle = this.physics.add.sprite(500, 400, "target");
-    // this.reticle.setOrigin(0.5,0.5)
-    //       .setDisplaySize(25, 25)
-    //       .setCollideWorldBounds(false);
-
-    //reticle initial settings
-    // game.canvas.addEventListener("mousedown", function () {
-    //   game.input.mouse.requestPointerLock();
-      
-    // });
 
     //setting the bullets informations as text
     this.bulletsText = this.add.text(16, 16, 'score: 0', { fontSize: '32px'});
     //this.bulletsText.setText('Your Bullets: ' + this.bullets_value);
 
-    
-  
-    // this.input.on("pointermove",(pointer: { movementX: number; movementY: number }) => {
-    //     if (game.input.mouse.locked) {
-          
-    //       // Move reticle with mouse
-    //       this.reticle.x += pointer.movementX;
-    //       this.reticle.y += pointer.movementY;
-          
-    //       //*********** "constraint" of reticle *************** */
-    //        // Only works when camera follows player
-    //        var distX = this.reticle.x - this.currentPlayer.x;
-    //        var distY = this.reticle.y - this.currentPlayer.y;
- 
-    //        // Ensures reticle cannot be moved offscreen
-    //        if (distX > 500)
-    //            this.reticle.x = this.currentPlayer.x+500;
-    //        else if (distX < -500)
-    //            this.reticle.x = this.currentPlayer.x-500;
- 
-    //        if (distY > 300)
-    //            this.reticle.y = this.currentPlayer.y+300;
-    //        else if (distY < -300)
-    //            this.reticle.y = this.currentPlayer.y-300;
-    //     }
-    //   },
-    //   this
-    // );
 
 
     this.room.state.players.onAdd = (player: any, sessionId: string) => {
@@ -285,7 +248,6 @@ export default class HelloWorldScene extends Phaser.Scene {
   }
 
   //to debugging the pointer.isDown in update() function
-  i: Number = 0;
 
   async update() {
 
@@ -314,10 +276,9 @@ export default class HelloWorldScene extends Phaser.Scene {
     if (this.pointer.isDown){
       if (time > 200){
         //for debugging print i to not overlap all the logs
-        console.log("shoot", this.i);
+        console.log("shoot");
         this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, 
           reticle_x: this.pointer.worldX, reticle_y: this.pointer.worldY });
-        this.i++;
         this.isDown_timeout = new Date().getTime();
       }
     }
