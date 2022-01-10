@@ -3,6 +3,8 @@ import { Room, Client, RedisPresence } from "colyseus";
 import { Schema, type, MapSchema } from "@colyseus/schema";
 import { Entity } from "./schema/Entity";
 import { generateId } from "colyseus";
+import { Bullet } from "./schema/Entity"
+//import Bullet from "../../client/static/ts/Bullet_class"
 
 const WORLD_SIZE = 2000;
 
@@ -12,25 +14,7 @@ export class Player extends Entity {
     this.radius = 20;
     this.minimun_radius = 15;
     this.maximum_radius = 250;
-  }
-}
-
-export class Bullet{
-  x = 0;
-  y = 0;
-  speed = 1;
-  born = 0;
-  direction = 0;
-  xSpeed = 0;
-  ySpeed = 0;
-  active = false;
-  constructor() {
-    this.speed = 1;
-    this.born = 0;
-    this.direction = 0;
-    this.xSpeed = 0;
-    this.ySpeed = 0;
-    this.active = false;
+    this.bullet = new Bullet();
   }
 }
 
@@ -38,13 +22,13 @@ export class State extends Schema {
   @type({ map: Entity })
   players = new MapSchema<Entity>();
 
-  bullets = new Bullet();
-
+  bullets = new Bullet()
 
   createPlayer(sessionId: string) {
     const color = Number(
       "0x" + Math.floor(Math.random() * 16777215).toString(16)
     );
+    var bullet = new Bullet()
     //oppure: this.players.set(sessionId, new Player());
     this.players.set(
       sessionId,
@@ -58,6 +42,8 @@ export class State extends Schema {
         your_bullets: 1,
         points: 0,
         minimun_radius: 15, //if reach this radius, the player will die
+        maximum_radius: 250,
+        bullet: bullet
       })
     );
   }
@@ -156,11 +142,16 @@ export class State extends Schema {
             deadPlayers.push(collideSessionId); // this elements will be removed
             this.createFood();
             if (player.radius <= player.maximum_radius)
-              player.radius += collidePlayer.radius - 5; //increase the radius of player
+              player.radius += 5; //increase the radius of player
               player.your_bullets += 1 //increase the bullets of the player
           }
         }
-      });
+        //update position of bullets
+        if (player.bullet.active){
+          this.update_pos_bullet(sessionId);
+        }
+      })
+      
     });
     
     // delete all dead entities
@@ -175,43 +166,46 @@ export class State extends Schema {
      
     });
 
-    //update position of bullets
-    if (this.bullets.active){
-      this.update_pos_bullet();
-    }
+    
     
   }
 
+  
   shot_a_bullet(sessionId: string, shot_Data: any){
     console.log("start the shot: ", shot_Data);
+
+    var player = this.players.get(sessionId)
     
-    this.bullets.direction = Math.atan( (shot_Data.reticle_x - shot_Data.player_x) / (shot_Data.reticle_y - shot_Data.player_y));
+    player.bullet.direction = Math.atan( (shot_Data.reticle_x - shot_Data.player_x) / (shot_Data.reticle_y - shot_Data.player_y));
 
      // Calculate X and y velocity of bullet to moves it from shooter to target
     if (shot_Data.reticle_y >= shot_Data.player_y){
-      this.bullets.xSpeed = this.bullets.speed * Math.sin(this.bullets.direction);
-      this.bullets.ySpeed = this.bullets.speed * Math.cos(this.bullets.direction);
+      player.bullet.xSpeed = player.bullet.speed * Math.sin(player.bullet.direction);
+      player.bullet.ySpeed = player.bullet.speed * Math.cos(player.bullet.direction);
     }
     else{
-      this.bullets.xSpeed = - this.bullets.speed * Math.sin(this.bullets.direction);
-      this.bullets.ySpeed = - this.bullets.speed * Math.cos(this.bullets.direction);
+      player.bullet.xSpeed = - player.bullet.speed * Math.sin(player.bullet.direction);
+      player.bullet.ySpeed = - player.bullet.speed * Math.cos(player.bullet.direction);
     }
 
-    this.bullets.born = 0; // Time since new bullet spawned
-   
+    player.bullet.born = 0; // Time since new bullet spawned
 
   }
 
   // Updates the position of the bullet each cycle
-  update_pos_bullet(){
+   update_pos_bullet(sessionId: string){
+
+    var player = this.players.get(sessionId)
+
     var delta = 7 //time between each updates (in this case: speed of bullets)
-    this.bullets.x += this.bullets.xSpeed * delta;
-    this.bullets.y += this.bullets.ySpeed * delta;
-    this.bullets.born += delta;
-    console.log(this.bullets.born)
-    console.log(this.bullets.x, " - ", this.bullets.y)
-    if (this.bullets.born > 800){ //GITTATA DEL PROIETTILE, VA AVANTI DI 1800 unità
-      this.bullets.active = false;
+    player.bullet.x += player.bullet.xSpeed * delta;
+    player.bullet.y += player.bullet.ySpeed * delta;
+    player.bullet.born += delta;
+    console.log(player.bullet.born)
+    console.log(player.bullet.x, " - ", player.bullet.y)
+
+    if (player.bullet.born > 800){ //GITTATA DEL PROIETTILE, VA AVANTI DI 1800 unità
+      player.bullet.active = false;
       //this.setActive(false);
       //this.setVisible(false);
     }
@@ -243,9 +237,11 @@ export class GameRoom extends Room<State> {
     this.onMessage("shot", (client, data) => {
       console.log("Received message from",client.sessionId,":",data);
       if(this.state.players.get(client.sessionId).your_bullets >= 1){ //check if it has bullets
-        this.state.bullets.active = true;
+        this.state.players.get(client.sessionId).bullet.active = true;
         this.state.shot_a_bullet(client.sessionId, data);
-      }else{
+        
+      } 
+      else {
         console.log("Received message from",client.sessionId,": NO BULLETS, YOU CANNOT SHOT");
       }
     });

@@ -70,6 +70,7 @@ class Bullet extends Phaser.GameObjects.Image {
         this.setSize(12, 12);
 
     }
+
     fire(shooter: Phaser.GameObjects.Container, target: { x: number, y: number }) {
 
         this.setPosition(shooter.x, shooter.y); // Initial position
@@ -95,7 +96,7 @@ class Bullet extends Phaser.GameObjects.Image {
         this.x += this.xSpeed * delta;
         this.y += this.ySpeed * delta;
         this.born += delta;
-
+        console.log("born: ",this.born," x: ", this.x, " y: ",this.y)
         if (this.born > 1500) {
             this.setActive(false);
             this.setVisible(false);
