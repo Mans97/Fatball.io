@@ -149,10 +149,10 @@ export default class HelloWorldScene extends Phaser.Scene {
             }
           }
 
-          if(player.bullet){
-            console.log(player.bullet.x)
-            console.log(player.bullet.y)
-          }
+          // if(this.room.state.players[id].bullet){
+            console.log("bullettt",this.room.state.players[id].bullet)
+            //console.log(this.room.state.players[id].bullet.y)
+          //}
 
           // if(this.room.state.bullets){
           //   console.log(this.room.state.bullets.x)

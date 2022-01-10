@@ -3,10 +3,34 @@ import { Room, Client, RedisPresence } from "colyseus";
 import { Schema, type, MapSchema } from "@colyseus/schema";
 import { Entity } from "./schema/Entity";
 import { generateId } from "colyseus";
-import { Bullet } from "./schema/Entity"
 //import Bullet from "../../client/static/ts/Bullet_class"
 
 const WORLD_SIZE = 2000;
+
+
+export class Bullet{
+
+  x: number;
+  y: number;
+  speed: number;
+  born: number;
+  direction: number;
+  xSpeed: number;
+  ySpeed: number;
+  active: boolean;
+
+  constructor(x: number, y: number,active: boolean){
+    this.x = x;
+    this.y = y;
+    this.speed = 1;
+    this.born = 0;
+    this.direction = 0;
+    this.xSpeed = 0;
+    this.ySpeed = 0;
+    this.active = active;
+  }
+
+}
 
 export class Player extends Entity {
   constructor() {
@@ -14,21 +38,22 @@ export class Player extends Entity {
     this.radius = 20;
     this.minimun_radius = 15;
     this.maximum_radius = 250;
-    this.bullet = new Bullet();
+    this.bullet = new Bullet(0,0,false);
   }
 }
+
 
 export class State extends Schema {
   @type({ map: Entity })
   players = new MapSchema<Entity>();
 
-  bullets = new Bullet()
+  // bullets = new Bullet()
 
   createPlayer(sessionId: string) {
     const color = Number(
       "0x" + Math.floor(Math.random() * 16777215).toString(16)
     );
-    var bullet = new Bullet()
+
     //oppure: this.players.set(sessionId, new Player());
     this.players.set(
       sessionId,
@@ -43,9 +68,10 @@ export class State extends Schema {
         points: 0,
         minimun_radius: 15, //if reach this radius, the player will die
         maximum_radius: 250,
-        bullet: bullet
+        bullet: new Bullet(0,0,false)
       })
     );
+    console.log("PLAYERRRRRRRRRRRRRRRRRRRRRR",this.players.get(sessionId))
   }
 
   createFood() {
@@ -145,11 +171,18 @@ export class State extends Schema {
               player.radius += 5; //increase the radius of player
               player.your_bullets += 1 //increase the bullets of the player
           }
+
+          if (player.bullet.active)
+            this.update_pos_bullet(sessionId);
+                      
         }
+        
+        
+        //console.log(player.bullet)
         //update position of bullets
-        if (player.bullet.active){
-          this.update_pos_bullet(sessionId);
-        }
+        // if (player.bullet.active){
+          
+        // }
       })
       
     });
@@ -239,7 +272,6 @@ export class GameRoom extends Room<State> {
       if(this.state.players.get(client.sessionId).your_bullets >= 1){ //check if it has bullets
         this.state.players.get(client.sessionId).bullet.active = true;
         this.state.shot_a_bullet(client.sessionId, data);
-        
       } 
       else {
         console.log("Received message from",client.sessionId,": NO BULLETS, YOU CANNOT SHOT");

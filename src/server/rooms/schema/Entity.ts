@@ -1,18 +1,5 @@
 import { Schema, type } from "@colyseus/schema";
-
-
-export class Bullet{
-
-  @type("float64") x: number;
-  @type("float64") y: number;
-  @type("float64") speed: number;
-  @type("int32") born: number;
-  @type("float64") direction: number;
-  @type("float64") xSpeed: number;
-  @type("float64") ySpeed: number;
-  @type("boolean") active: Boolean;
-
-}
+import { Bullet } from "../GameRoom"
 
 export class Entity extends Schema {
   @type("float64") x!: number;
