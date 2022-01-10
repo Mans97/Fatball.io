@@ -161,7 +161,6 @@
 
             // indicate the message to check if the game could start or not based on the minimum connections
             lobby.onMessage('players', function (counter) {
-                console.log('Message called')
                 if (counter < 4) {
                     // not enough players to start the game
                     updateButtonGame(disabled = false)
@@ -170,6 +169,18 @@
                     updateButtonGame(disabled = true)
                 }
             });
+
+            // user already taken
+            lobby.onMessage('errorUsername', function(){
+                alert('Nickname already taken in this room, please choice an other one!')
+                toggleInterface()
+            })
+
+            // One of the player started the game
+            lobby.onMessage('startGame', function(){
+                console.log('Starting game... redirection to the game page')
+                window.location.href = "http://localhost:8000/?&roomId=234y8923y489"
+            })
 
             lobby.onLeave((client) => {
                 console.log("Log: Leaving Connection invoke...");
@@ -225,8 +236,11 @@
                 buttonGame.disabled = false
                 buttonGame.innerHTML = "Start"
                 buttonGame.onclick = function(){
-                    console.log('Start the Game!!!')
-                    window.location.href = "http://localhost:8000"
+                    console.log('Game is starting!')
+                    
+                    lobby.send("initGame", {})
+                    
+                    
                 }
                 buttonGame.style.backgroundColor = "#0275d8" // don't scare, it is the primary color
             } else {
