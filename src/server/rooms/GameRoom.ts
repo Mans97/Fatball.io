@@ -16,17 +16,21 @@ export class Player extends Entity {
 }
 
 export class Bullet{
+  x = 0;
+  y = 0;
   speed = 1;
   born = 0;
   direction = 0;
   xSpeed = 0;
   ySpeed = 0;
+  active = false;
   constructor() {
     this.speed = 1;
     this.born = 0;
     this.direction = 0;
     this.xSpeed = 0;
     this.ySpeed = 0;
+    this.active = false;
   }
 }
 
@@ -34,8 +38,8 @@ export class State extends Schema {
   @type({ map: Entity })
   players = new MapSchema<Entity>();
 
-  //@type({ map: Entity })
-  //foods = new MapSchema<Entity>();
+  bullets = new Bullet();
+
 
   createPlayer(sessionId: string) {
     const color = Number(
@@ -176,11 +180,48 @@ export class State extends Schema {
       }
      
     });
+
+    //update position of bullets
+    if (this.bullets.active){
+      this.update_pos_bullet();
+    }
+    
   }
 
 
   shot_a_bullet(sessionId: string, shot_Data: any){
-    console.log("start the shot");
+    console.log("start the shot: ", shot_Data);
+    
+    this.bullets.direction = Math.atan( (shot_Data.reticle_x - shot_Data.player_x) / (shot_Data.reticle_y - shot_Data.player_y));
+
+     // Calculate X and y velocity of bullet to moves it from shooter to target
+    if (shot_Data.reticle_y >= shot_Data.player_y){
+      this.bullets.xSpeed = this.bullets.speed * Math.sin(this.bullets.direction);
+      this.bullets.ySpeed = this.bullets.speed * Math.cos(this.bullets.direction);
+    }
+    else{
+      this.bullets.xSpeed = - this.bullets.speed * Math.sin(this.bullets.direction);
+      this.bullets.ySpeed = - this.bullets.speed * Math.cos(this.bullets.direction);
+    }
+
+    this.bullets.born = 0; // Time since new bullet spawned
+   
+
+  }
+
+  // Updates the position of the bullet each cycle
+  update_pos_bullet(){
+    var delta = 7 //time between each updates (in this case: speed of bullets)
+    this.bullets.x += this.bullets.xSpeed * delta;
+    this.bullets.y += this.bullets.ySpeed * delta;
+    this.bullets.born += delta;
+    console.log(this.bullets.born)
+    console.log(this.bullets.x, " - ", this.bullets.y)
+    if (this.bullets.born > 800){ //GITTATA DEL PROIETTILE, VA AVANTI DI 1800 unità
+      this.bullets.active = false;
+      //this.setActive(false);
+      //this.setVisible(false);
+    }
   }
 
 
@@ -211,6 +252,7 @@ export class GameRoom extends Room<State> {
     this.onMessage("shot", (client, data) => {
       console.log("Received message from",client.sessionId,":",data);
       if(this.state.players.get(client.sessionId).your_bullets >= 1){ //check if it has bullets
+        this.state.bullets.active = true;
         this.state.shot_a_bullet(client.sessionId, data);
       }else{
         console.log("Received message from",client.sessionId,": NO BULLETS, YOU CANNOT SHOT");

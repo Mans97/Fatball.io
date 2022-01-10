@@ -17,6 +17,8 @@ export default class HelloWorldScene extends Phaser.Scene {
 
   bullets_value: number = 0;
   bulletsText: any;
+  bullet_object: any;
+
   constructor() {
     super("hello-world");
   }
@@ -184,7 +186,7 @@ export default class HelloWorldScene extends Phaser.Scene {
           }
         }
         
-        //getting the bullets
+        //getting the remaining bullets
         this.bullets_value = this.room.state.players[sessionId].your_bullets;
         //console.log("bullets: ", this.bullets_value)
 
