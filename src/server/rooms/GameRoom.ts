@@ -240,8 +240,8 @@ export class State extends Schema {
 
     }
 
-    console.log(bullet_coordinates)
-    console.log(player.bullet.x, " ", player.bullet.y)
+    // console.log(bullet_coordinates)
+    // console.log(player.bullet.x, " ", player.bullet.y)
 
     if (player.bullet.born >= 800){ //GITTATA DEL PROIETTILE, VA AVANTI DI 1800 unità
       player.bullet.active = false;
@@ -251,25 +251,6 @@ export class State extends Schema {
 
     return bullet_coordinates;
 
-  }
-
-  // Updates the position of the bullet each cycle
-  update_pos_bullet(sessionId: string){
-
-    var player = this.players.get(sessionId)
-
-    var delta = 7 //time between each updates (in this case: speed of bullets)
-    player.bullet.x += player.bullet.xSpeed * delta;
-    player.bullet.y += player.bullet.ySpeed * delta;
-    player.bullet.born += delta;
-    console.log(player.bullet.born)
-    console.log(player.bullet.x, " - ", player.bullet.y)
-
-    if (player.bullet.born > 800){ //GITTATA DEL PROIETTILE, VA AVANTI DI 1800 unità
-      player.bullet.active = false;
-      //this.setActive(false);
-      //this.setVisible(false);
-    }
   }
   
 }
@@ -297,7 +278,7 @@ export class GameRoom extends Room<State> {
 
     //on shot
     this.onMessage("shot", (client, data) => {
-      console.log("Received message from",client.sessionId,":",data);
+      //console.log("Received message from",client.sessionId,":",data);
       if(this.state.players.get(client.sessionId).your_bullets >= 1){ //check if it has bullets
         type bullet_coor = {x: number, y: number}
         var bullet_coordinates: bullet_coor[] = []

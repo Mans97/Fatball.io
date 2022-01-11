@@ -94,9 +94,13 @@ export default class HelloWorldScene extends Phaser.Scene {
       (async () => { 
 
         for(let i in data){
+
             bullet.setX(data[i].x);
             bullet.setY(data[i].y);
+            //velocità grafica del proiettile
             await delay(15);
+            //this.room.send()
+
         }
 
         bullet.destroy()
