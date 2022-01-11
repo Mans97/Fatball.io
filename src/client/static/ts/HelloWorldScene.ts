@@ -82,9 +82,6 @@ export default class HelloWorldScene extends Phaser.Scene {
       repeat: -1
     });
 
-    // this.add.sprite(400, 300, 'cat1')
-    //   .play('snooze');
-
     function delay(ms: number) {
       return new Promise( resolve => setTimeout(resolve, ms) );
     }
@@ -97,12 +94,9 @@ export default class HelloWorldScene extends Phaser.Scene {
       (async () => { 
 
         for(let i in data){
-
             bullet.setX(data[i].x);
             bullet.setY(data[i].y);
-            //console.log(bullet.setX(data[i].x),"   ",bullet.setY(data[i].y))
             await delay(15);
-
         }
 
         bullet.destroy()
