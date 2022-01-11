@@ -24,7 +24,8 @@ export class LobbyGameRoom extends LobbyRoom {
         // this message is triggered on the start button in one of the player of the lobby
         this.onMessage("initGame", (client, message) =>{
             this.isGameStarting = true
-            this.broadcast("startGame", {}) // void because it is only a redirect for now
+
+            this.broadcast("startGame", {room : this.roomId, username : client.userData.username}) // void because it is only a redirect for now
         })
 
         // forwarding of the adding player in the client if the first update failed

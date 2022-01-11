@@ -177,9 +177,9 @@
             })
 
             // One of the player started the game
-            lobby.onMessage('startGame', function(){
+            lobby.onMessage('startGame', function(data){
                 console.log('Starting game... redirection to the game page')
-                window.location.href = "http://localhost:8000/?&roomId=234y8923y489"
+                window.location.href = "http://localhost:8000/?&roomId=" +data.room+"&username="+data.username
             })
 
             lobby.onLeave((client) => {
