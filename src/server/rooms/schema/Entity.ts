@@ -12,7 +12,7 @@ export class Entity extends Schema {
   @type("int32") points!: number;
   @type("float32") minimun_radius!: number;
   @type("float32") maximum_radius!: number;
-  bullet!: Bullet;
+  bullet: Bullet = new Bullet(0,0,false);
 
   dead: boolean = false;
   angle: number = 0;

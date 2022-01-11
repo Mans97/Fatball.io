@@ -19,7 +19,7 @@ export class Bullet{
   ySpeed: number;
   active: boolean;
 
-  constructor(x: number, y: number,active: boolean){
+  constructor(x: number, y: number, active: boolean){
     this.x = x;
     this.y = y;
     this.speed = 1;
@@ -135,8 +135,12 @@ export class State extends Schema {
     }
   }
 
+  pippo: boolean = true;
+
   update() {
     //console.log("\t\t ----------- Update in room ----------- ")
+    if(this.pippo)
+      console.log(this.players.get)
     const deadPlayers: string[] = [];
     this.players.forEach((player, sessionId) => {
       if (player.dead) {
@@ -172,10 +176,23 @@ export class State extends Schema {
               player.your_bullets += 1 //increase the bullets of the player
           }
 
-          if (player.bullet.active)
-            this.update_pos_bullet(sessionId);
+          
                       
         }
+
+        // if(this.players.get(sessionId).bullet.active)
+        //   this.update_pos_bullet(sessionId)
+
+
+
+        // console.log('A ',player, ' B ', this.players.get(sessionId))
+        // console.log('Player not sessionId ' ,player.bullet.active,' x speed ', player.bullet.xSpeed)
+        // console.log('Player with sessionId ' ,this.players.get(sessionId).bullet.active)
+
+        /* if (player.bullet)
+          this.update_pos_bullet(sessionId); */
+
+
         
         
         //console.log(player.bullet)
@@ -196,11 +213,8 @@ export class State extends Schema {
         this.players.delete(sessionId);
         console.log("Player removed from game: ", sessionId);
       }
-     
     });
 
-    
-    
   }
 
   
@@ -226,7 +240,7 @@ export class State extends Schema {
   }
 
   // Updates the position of the bullet each cycle
-   update_pos_bullet(sessionId: string){
+  update_pos_bullet(sessionId: string){
 
     var player = this.players.get(sessionId)
 
@@ -247,6 +261,7 @@ export class State extends Schema {
 }
 
 export class GameRoom extends Room<State> {
+
   onCreate(options: any) {
     this.setState(new State());
     //add food
@@ -263,6 +278,7 @@ export class GameRoom extends Room<State> {
     //on move
     this.onMessage("move", (client, data) => {
       //console.log("Received message from",client.sessionId,":",data);
+      console.log('player nel create backend ',this.state.players.get(client.sessionId).bullet)
       this.state.movePlayer(client.sessionId, data);
     });
 
@@ -286,6 +302,7 @@ export class GameRoom extends Room<State> {
     console.log(options.name, " joined!");
     //create the player
     this.state.createPlayer(client.sessionId);
+   
   }
 
   onLeave(client: Client, consented: boolean) {

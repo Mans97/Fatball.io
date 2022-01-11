@@ -70,8 +70,10 @@ export default class HelloWorldScene extends Phaser.Scene {
       //console.log("\tenter in onAdd");
       var circle_player: Phaser.GameObjects.Arc;
       var style_player: Phaser.GameObjects.Container;
-
+      
       if (player.radius != 10) {
+        console.log('ponyyyyyy ',player)
+        console.log('bullet client ',player.bullet)
         //create the player with text inside
         circle_player = this.add
           .circle(0, 0, player.radius, player.color, 0.6)
@@ -150,7 +152,7 @@ export default class HelloWorldScene extends Phaser.Scene {
           }
 
           // if(this.room.state.players[id].bullet){
-            console.log("bullettt",this.room.state.players[id].bullet)
+          console.log("bullettt",this.room.state.players[id].bullet)
             //console.log(this.room.state.players[id].bullet.y)
           //}
 
