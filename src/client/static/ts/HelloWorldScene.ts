@@ -1,6 +1,7 @@
 import Phaser, { Data } from "phaser";
 import * as Colyseus from "colyseus.js";
 import { State } from "../../../server/rooms/GameRoom";
+import Bullet from "./Bullet_class"
 
 const WORLD_SIZE = 2000;
 
@@ -65,6 +66,49 @@ export default class HelloWorldScene extends Phaser.Scene {
     //setting the bullets informations as text
     this.bulletsText = this.add.text(16, 16, 'score: 0', { fontSize: '32px'});
     //this.bulletsText.setText('Your Bullets: ' + this.bullets_value);
+
+    /* this.room.onMessage('shot', (message: any) => {
+            console.log("emaaaaaa", message)
+        }) */
+    //var bullet: Bullet;
+
+    this.anims.create({
+      key: 'snooze',
+      frames: [
+          { key: 'bullet' ,
+           duration: 50 }
+      ],
+      frameRate: 8,
+      repeat: -1
+    });
+
+    // this.add.sprite(400, 300, 'cat1')
+    //   .play('snooze');
+
+    function delay(ms: number) {
+      return new Promise( resolve => setTimeout(resolve, ms) );
+    }
+
+    this.room.onMessage("shoot_coordinates", (data: any) => {
+
+      var bullet: Bullet = new Bullet(this,data[0].x,data[0].y);
+      this.add.existing(bullet);
+
+      (async () => { 
+
+        for(let i in data){
+
+            bullet.setX(data[i].x);
+            bullet.setY(data[i].y);
+            //console.log(bullet.setX(data[i].x),"   ",bullet.setY(data[i].y))
+            await delay(15);
+
+        }
+
+        bullet.destroy()
+      })();
+
+    })
 
     this.room.state.players.onAdd = (player: any, sessionId: string) => {
       //console.log("\tenter in onAdd");
@@ -148,11 +192,12 @@ export default class HelloWorldScene extends Phaser.Scene {
                 circle_player.setRadius(this.room.state.players[sessionId].radius);
                 console.log("RAGGIO GIOCATORE ",id," :", this.players[id].getData('radius'), " and radius of circle ", circle_player.radius , "radius from backend ", this.room.state.players[id].radius)
               }
+              this.room.state.players[id].radius
             }
           }
 
           // if(this.room.state.players[id].bullet){
-          console.log("bullettt",this.room.state.players[id].bullet)
+          //console.log("bullettt",this.room.state.players[id].bullet)
             //console.log(this.room.state.players[id].bullet.y)
           //}
 
@@ -178,6 +223,9 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     // Fires bullet from player on left click of mouse
     this.input.on('pointerdown', (pointer: any, time: any, lastFired: any) => {
+      console.log("shoot", this.currentPlayer.x, " ", this.currentPlayer.y, " ", this.pointer.worldX, " ", this.pointer.worldY);
+      this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, 
+        reticle_x: this.pointer.worldX, reticle_y: this.pointer.worldY });
 
       // ************************************************
       // *************** VECCHIA VERSIONE ***************
@@ -235,17 +283,18 @@ export default class HelloWorldScene extends Phaser.Scene {
       this.bulletsText.setText('Your Bullets: ' + this.bullets_value);
     }
 
-    var time = new Date().getTime() - Number(this.isDown_timeout);
+    //var time = new Date().getTime() - Number(this.isDown_timeout);
     
-    if (this.pointer.isDown){
-      if (time > 200){
-        //for debugging print i to not overlap all the logs
-        console.log("shoot");
-        this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, 
-          reticle_x: this.pointer.worldX, reticle_y: this.pointer.worldY });
-        this.isDown_timeout = new Date().getTime();
-      }
-    }
+    // if (this.pointer.leftButtonDown()){
+    //   this.pointer.downElement()
+    //   if (time > 200){
+    //     //for debugging print i to not overlap all the logs
+    //     console.log("shoot", this.currentPlayer.x, " ", this.currentPlayer.y, " ", this.pointer.worldX, " ", this.pointer.worldY);
+    //     this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, 
+    //       reticle_x: this.pointer.worldX, reticle_y: this.pointer.worldY });
+    //     this.isDown_timeout = new Date().getTime();
+    //   }
+    // }
 
     if (this.cursors) {
 
@@ -271,3 +320,4 @@ export default class HelloWorldScene extends Phaser.Scene {
     }
   }
 }
+

@@ -139,8 +139,6 @@ export class State extends Schema {
 
   update() {
     //console.log("\t\t ----------- Update in room ----------- ")
-    if(this.pippo)
-      console.log(this.players.get)
     const deadPlayers: string[] = [];
     this.players.forEach((player, sessionId) => {
       if (player.dead) {
@@ -175,15 +173,8 @@ export class State extends Schema {
               player.radius += 5; //increase the radius of player
               player.your_bullets += 1 //increase the bullets of the player
           }
-
-          
-                      
+             
         }
-
-        // if(this.players.get(sessionId).bullet.active)
-        //   this.update_pos_bullet(sessionId)
-
-
 
         // console.log('A ',player, ' B ', this.players.get(sessionId))
         // console.log('Player not sessionId ' ,player.bullet.active,' x speed ', player.bullet.xSpeed)
@@ -191,17 +182,8 @@ export class State extends Schema {
 
         /* if (player.bullet)
           this.update_pos_bullet(sessionId); */
-
-
-        
-        
-        //console.log(player.bullet)
-        //update position of bullets
-        // if (player.bullet.active){
-          
-        // }
       })
-      
+
     });
     
     // delete all dead entities
@@ -221,10 +203,17 @@ export class State extends Schema {
   shot_a_bullet(sessionId: string, shot_Data: any){
     console.log("start the shot: ", shot_Data);
 
-    var player = this.players.get(sessionId)
-    
-    player.bullet.direction = Math.atan( (shot_Data.reticle_x - shot_Data.player_x) / (shot_Data.reticle_y - shot_Data.player_y));
+    type bullet_coor = {x: number, y: number}
 
+    let bullet_coordinates: bullet_coor[] = [];
+
+    var player = this.players.get(sessionId)
+
+    player.bullet.x = shot_Data.player_x
+    player.bullet.y = shot_Data.player_y
+    
+    player.bullet.direction = Math.atan((shot_Data.reticle_x - player.bullet.x) / (shot_Data.reticle_y - player.bullet.y));
+    console.log(player.bullet.direction)
      // Calculate X and y velocity of bullet to moves it from shooter to target
     if (shot_Data.reticle_y >= shot_Data.player_y){
       player.bullet.xSpeed = player.bullet.speed * Math.sin(player.bullet.direction);
@@ -236,6 +225,31 @@ export class State extends Schema {
     }
 
     player.bullet.born = 0; // Time since new bullet spawned
+
+    var delta = 7 //time between each updates (in this case: speed of bullets)
+
+    while(player.bullet.born<800){
+
+      player.bullet.x += player.bullet.xSpeed * delta;
+      player.bullet.y += player.bullet.ySpeed * delta;
+      player.bullet.born += delta;
+      var coor: bullet_coor = {x: player.bullet.x, y: player.bullet.y}
+      bullet_coordinates.push(coor);
+      //console.log(player.bullet.born)
+      //console.log(player.bullet.x, " - ", player.bullet.y)
+
+    }
+
+    console.log(bullet_coordinates)
+    console.log(player.bullet.x, " ", player.bullet.y)
+
+    if (player.bullet.born >= 800){ //GITTATA DEL PROIETTILE, VA AVANTI DI 1800 unità
+      player.bullet.active = false;
+      //this.setActive(false);
+      //this.setVisible(false);
+    }
+
+    return bullet_coordinates;
 
   }
 
@@ -278,7 +292,6 @@ export class GameRoom extends Room<State> {
     //on move
     this.onMessage("move", (client, data) => {
       //console.log("Received message from",client.sessionId,":",data);
-      console.log('player nel create backend ',this.state.players.get(client.sessionId).bullet)
       this.state.movePlayer(client.sessionId, data);
     });
 
@@ -286,8 +299,10 @@ export class GameRoom extends Room<State> {
     this.onMessage("shot", (client, data) => {
       console.log("Received message from",client.sessionId,":",data);
       if(this.state.players.get(client.sessionId).your_bullets >= 1){ //check if it has bullets
-        this.state.players.get(client.sessionId).bullet.active = true;
-        this.state.shot_a_bullet(client.sessionId, data);
+        type bullet_coor = {x: number, y: number}
+        var bullet_coordinates: bullet_coor[] = []
+        bullet_coordinates = this.state.shot_a_bullet(client.sessionId, data);
+        this.broadcast("shoot_coordinates", bullet_coordinates)
       } 
       else {
         console.log("Received message from",client.sessionId,": NO BULLETS, YOU CANNOT SHOT");
