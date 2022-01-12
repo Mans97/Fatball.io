@@ -1,10 +1,57 @@
-<html>
+<html lang="en">
 	<head>
 		<title>Fatball.io</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+		<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 	</head>
+	<style>
+		*{
+			margin: 0;
+			padding: 0;
+			
+		}
+		#logout {
+			float: right;
+			margin-left: 70%;
+		}
+		  
+		
+</style>
 	<body>
-		<h1>Fatball</h1>
+		<nav class="navbar navbar-expand-lg fixed-top  navbar-light bg-light">
+			<div class="container">
+			  <a class="navbar-brand" href="#">Fatball.io</a>
+			  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			  </button>
+			  <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+				<div class="navbar-nav">
+				  <a class="nav-item nav-link active" href="#roomID" id="roomID"></a>
+				  <a class="nav-item nav-link" href="#username" id="username"></a>
+				  <a class="nav-item nav-link" href="#settings">Settings</a>
+				</div>
+				<a id="logout" href="#">Exit</a>
+			  </div>
+			</div>
+		  </nav>
+
+
+		  
+		<script>const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+const roomId = urlParams.get('roomId');
+const username = urlParams.get('username');
+document.getElementById("roomID").innerHTML = "room: " + roomId;
+document.getElementById("username").innerHTML = "user: " + username;
+
+</script>
+	
 				 
 		<script src="/game.c52e9cf7.js" defer=""></script>
 	</body>
+
+
+	
 </html>
