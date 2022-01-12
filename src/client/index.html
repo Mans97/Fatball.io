@@ -161,10 +161,11 @@
             })
 
             // indicate the message to check if the game could start or not based on the minimum connections
+
             lobby.onMessage('players', function (userData) {
                 if (userData.room == _roomName) {
-                    if (userData.counter < 4) {
-                        // not enough players to start the game
+                    if (userData.counter < 2) {
+                    // not enough players to start the game
                         updateButtonGame(disabled = false)
                     } else {
                         // enough player to start game, prepare for it!
