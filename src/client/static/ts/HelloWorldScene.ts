@@ -23,12 +23,17 @@ export default class HelloWorldScene extends Phaser.Scene {
   //avoid to shoot multiple times with a single left button press
   isDown_timeout: Number;
 
+  roomID_fromUrl: any;
+  usernameFromUrl: any;
   constructor() {
     super("hello-world");
   }
 
   init() {
     this.client = new Colyseus.Client("ws://localhost:2567");
+    // this.roomID_fromUrl = this.getFromURL('roomId');
+    // this.usernameFromUrl = this.getFromURL('username');
+
   }
 
   preload() {
@@ -58,9 +63,11 @@ export default class HelloWorldScene extends Phaser.Scene {
     console.log(this.cursors);
 
     //Join room
-    this.room = await this.client.joinOrCreate<State>("game_room"); //if there is one in the room, I have to use joinOrCreate()
+    this.room = await this.client.joinOrCreate<State>("game_room", {name: this.getFromURL('username')}); //if there is one in the room, I have to use joinOrCreate()
 
-    console.log(this.room.sessionId); //id of connectedplayes, esiste anche room.name
+    console.log("SESSION ID OF user: ",this.room.sessionId); //id of connectedplayes, esiste anche room.name
+    //console.log(this.usernameFromUrl, " - ", this.roomID_fromUrl)
+    //this.room.send('dataURL',{userURL: this.usernameFromUrl, roomID_URL: this.roomID_fromUrl});
 
 
     //setting the bullets informations as text
@@ -78,6 +85,8 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     this.room.onMessage("shoot_coordinates", (data: any) => {
 
+      console.log("ho ricevuto delle coor")
+
       var bullet: Bullet = new Bullet(this,data[0].x,data[0].y);
       this.add.existing(bullet);
 
@@ -88,10 +97,11 @@ export default class HelloWorldScene extends Phaser.Scene {
             bullet.setX(data[i].x);
             bullet.setY(data[i].y);
             //console.log(data[i].playerShot)
-
+            if(data[i].playerShot == this.room.sessionId){
             //velocità grafica del proiettile
-            console.log("check-the hit ", i)
-            this.room.send("check-the-hit", {playerShot: data[i].playerShot,x: bullet.x, y: bullet.y})
+              console.log("check-the hit ", i)
+              this.room.send("check-the-hit", {playerShot: data[i].playerShot,x: bullet.x, y: bullet.y})
+            }
             await delay(15);
             
 
@@ -300,6 +310,14 @@ export default class HelloWorldScene extends Phaser.Scene {
         //this.currentPlayer.y += 5;
       }
     }
+  }
+
+
+  getFromURL(search_string: any){
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const code = urlParams.get(search_string);
+    return code;
   }
 }
 

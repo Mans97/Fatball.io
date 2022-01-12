@@ -71,7 +71,7 @@ export class State extends Schema {
         bullet: new Bullet(0,0,false)
       })
     );
-    console.log("PLAYERRRRRRRRRRRRRRRRRRRRRR",this.players.get(sessionId))
+    //console.log("PLAYERRRRRRRRRRRRRRRRRRRRRR",this.players.get(sessionId))
   }
 
   createFood() {
@@ -276,7 +276,6 @@ export class GameRoom extends Room<State> {
       // }
       //if(this.state.players.())
       //if(data.playerShot == clients[0]){
-      i = 0
       console.log("dataaaaa: ", data)
       console.log("check-the hit ", ++i)
       this.state.checkBulletHit(client.sessionId,data)
@@ -299,6 +298,12 @@ export class GameRoom extends Room<State> {
       }
     });
 
+
+    // this.onMessage("dataURL", (client, data) => {
+    //   console.log("data From URL ", data)
+    //   this.state.players.get(client.sessionId).name = data.userURL;
+    // });
+
     this.setSimulationInterval(() => this.state.update()); //default is 60fps
   }
 
@@ -307,6 +312,7 @@ export class GameRoom extends Room<State> {
     console.log(options.name, " joined!");
     //create the player
     this.state.createPlayer(client.sessionId);
+    this.state.players.get(client.sessionId).name = options.name;
    
   }
 
