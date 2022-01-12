@@ -183,8 +183,9 @@
             // One of the player started the game
             lobby.onMessage('startGame', function (data) {
                 if(data.room == _roomName){
+                console.log("POADOPOPADOPKADSOKLNADSJKLNADSOHJKLHJO")
                 console.log('Starting game... redirection to the game page')
-                window.location.href = "http://localhost:8000/?&roomId=" + data.room + "&username=" + _username
+                window.location.href = "http://192.168.1.73:8000/?&roomId=" + data.room + "&username=" + _username
                 }
             })
 

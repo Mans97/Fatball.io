@@ -98,7 +98,7 @@ export default class HelloWorldScene extends Phaser.Scene {
               await delay(15);
           }
           this.bullet.destroy()
-          console.log(this.bullet)
+          //console.log(this.bullet)
           this.bullet_is_destroyed = true
         })();
 
@@ -108,11 +108,12 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     // Fires bullet from player on left click of mouse
     this.input.on('pointerdown', (pointer: any, time: any, lastFired: any) => {
-      console.log("shoot", this.currentPlayer.x, " ", this.currentPlayer.y, " ", this.pointer.worldX, " ", this.pointer.worldY);
-      if(this.bullet_is_destroyed)
+      //console.log("shoot", this.currentPlayer.x, " ", this.currentPlayer.y, " ", this.pointer.worldX, " ", this.pointer.worldY);
+      if(this.bullet_is_destroyed){
         this.bullet_is_destroyed = false
         this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, 
           reticle_x: this.pointer.worldX, reticle_y: this.pointer.worldY });
+      }
     }, this);
 
 
@@ -200,14 +201,19 @@ export default class HelloWorldScene extends Phaser.Scene {
           }
         }
 
+        console.log(this.room.state.players[sessionId].is_bullet_active)
         if(!this.room.state.players[sessionId].is_bullet_active){
-          console.log("bullet not activeeeeeeeee")
+          console.log(this.room.state.players[sessionId].is_bullet_active)
           if(!this.bullet_is_destroyed){
-            this.bullet_is_destroyed = true
             this.bullet.destroy()
+            console.log("bullet not activeeeeeeeee")
+            this.bullet_is_destroyed = true
             //this.bullet_is_destroyed = true
           }
         }
+        
+
+        
         
         //getting the remaining bullets
         this.bullets_value = this.room.state.players[sessionId].your_bullets;

@@ -37,7 +37,7 @@ export class Player extends Entity {
     this.minimun_radius = 15;
     this.maximum_radius = 250;
     this.bullet = new Bullet(0,0);
-    this.is_bullet_active = false;
+    this.is_bullet_active = true;
   }
 }
 
@@ -171,23 +171,20 @@ export class State extends Schema {
               player.radius += 5; //increase the radius of player
               player.your_bullets += 1 //increase the bullets of the player
           }
-             
-        }
 
+        }
         if(collidePlayer.radius > 10 && Entity.distance(player.bullet, collidePlayer) <= collidePlayer.radius
            && player.is_bullet_active){
-
+            //deactivate the bullet
+            player.is_bullet_active = false
             console.log(collidePlayer.name, "è stato colpitooooo ")
             //decrease player radius and check if it is dead
             collidePlayer.radius -= 5
             if(collidePlayer.radius <= collidePlayer.minimun_radius){
               collidePlayer.dead = true
             }
-            //deactivate the bullet
-            player.is_bullet_active = false
-
+                
         }
-        //this.checkBulletHit(player,sessionId,collidePlayer,collideSessionId)
 
       })
 
