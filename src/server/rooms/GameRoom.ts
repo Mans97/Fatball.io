@@ -292,6 +292,7 @@ export class GameRoom extends Room<State> {
 
     this.onMessage("dataURL", (client, data) => {
       console.log("data From URL ", data)
+      //this.state.client
     });
 
     this.setSimulationInterval(() => this.state.update()); //default is 60fps
