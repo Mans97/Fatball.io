@@ -197,9 +197,11 @@
          */
         function toggleInterface() {
             if (loginPhase.style.display == "none") {
+                document.getElementById("roomField").innerHTML = ""
                 loginPhase.style.display = "block"; _lobbySession = false; _loginSession = true;
             } else { loginPhase.style.display = "none"; _lobbySession = true; _loginSession = false; }
             if (lobbyPhase.style.display == "none") {
+                document.getElementById("roomField").innerHTML = " " + _roomName
                 lobbyPhase.style.display = "block"; _lobbySession = true; _loginSession = false;
             } else { lobbyPhase.style.display = "none"; _lobbySession = false; _loginSession = true; }
         }
