@@ -50,7 +50,7 @@
     </div>
     <div style="display: none" id="lobby-content">
         <div>
-            <h1 class="d-flex justify-content-center">Lobby Players:</h1><br>
+            <h1 class="d-flex justify-content-center">Lobby Players in <span id="roomField"></span>:</h1><br>
             <div class="d-flex justify-content-center">
                 <ol id="list-username" class="list-group list-group-numbered">
                     <!-- Dynamic insert for user listing -->
@@ -103,12 +103,12 @@
          * lobby status on a single instance (and shared state) 
          */
         function createAndJoin() {
-            if(!precondition()) return 0; // calling pre-conditions
+            if (!precondition()) return 0; // calling pre-conditions
             console.log(`Connection of ${_username} on ${_roomName}`) //
             var room = client.joinOrCreate("lobby_room", // if not exists, onCreate and than onJoin
                 {
                     username: _username, // register in the client distributed instance
-                    roomId: _roomName // this.roomID
+                    roomName: _roomName // this.roomID
                 }).then(room_instance => {
                     lobby = room_instance // update the lobby state locally
                     toggleInterface(); // update interface to check lobby informations and hide the login
@@ -143,43 +143,48 @@
             })
 
             // + indicate the command to adjust the local username list because there is a new entry
-            lobby.onMessage('+', function (usernames) {
+            lobby.onMessage('+', function (userData) {
                 // adding username from the current client list
-                if (_lobbySession) {
-                    _listUsers = usernames
-                    updateListUsername(usernames);
+                if (_lobbySession && userData.room == _roomName) {
+                    _listUsers = userData.players
+                    updateListUsername(userData.players);
                 } else {
                     // do nothing, illegal call
                 }
             })
 
             // - indicate the command to adjust the local username list because there is a leaver
-            lobby.onMessage('-', function (usernames) {
-                _listUsers = usernames
-                updateListUsername(usernames);
+            lobby.onMessage('-', function (userData) {
+                if (userData.room == _roomName)
+                    _listUsers = userData.players
+                updateListUsername(userData.players);
             })
 
             // indicate the message to check if the game could start or not based on the minimum connections
-            lobby.onMessage('players', function (counter) {
-                if (counter < 4) {
-                    // not enough players to start the game
-                    updateButtonGame(disabled = false)
-                } else {
-                    // enough player to start game, prepare for it!
-                    updateButtonGame(disabled = true)
+            lobby.onMessage('players', function (userData) {
+                if (userData.room == _roomName) {
+                    if (userData.counter < 4) {
+                        // not enough players to start the game
+                        updateButtonGame(disabled = false)
+                    } else {
+                        // enough player to start game, prepare for it!
+                        updateButtonGame(disabled = true)
+                    }
                 }
             });
 
             // user already taken
-            lobby.onMessage('errorUsername', function(){
+            lobby.onMessage('errorUsername', function () {
                 alert('Nickname already taken in this room, please choice an other one!')
                 toggleInterface()
             })
 
             // One of the player started the game
-            lobby.onMessage('startGame', function(data){
+            lobby.onMessage('startGame', function (data) {
+                if(data.room == _roomName){
                 console.log('Starting game... redirection to the game page')
-                window.location.href = "http://localhost:8000/?&roomId=" +data.room+"&username="+data.username
+                window.location.href = "http://localhost:8000/?&roomId=" + data.room + "&username=" + _username
+                }
             })
 
             lobby.onLeave((client) => {
@@ -202,7 +207,7 @@
         /**
          * updateListUsername() - Updating the list of usernmes in the lobby given by broadcast command to re-set the username list
          * with upgraded information (current LobbyGameRoom state)
-         */ 
+         */
         function updateListUsername(usernames) {
             if (lobbyPhase.style.display == "block") {
                 listUsername = document.getElementById("list-username")
@@ -235,12 +240,12 @@
                 console.log('Game Ready, it should start...')
                 buttonGame.disabled = false
                 buttonGame.innerHTML = "Start"
-                buttonGame.onclick = function(){
+                buttonGame.onclick = function () {
                     console.log('Game is starting!')
-                    
+
                     lobby.send("initGame", {})
-                    
-                    
+
+
                 }
                 buttonGame.style.backgroundColor = "#0275d8" // don't scare, it is the primary color
             } else {
