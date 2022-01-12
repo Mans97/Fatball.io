@@ -87,8 +87,11 @@ export default class HelloWorldScene extends Phaser.Scene {
 
             bullet.setX(data[i].x);
             bullet.setY(data[i].y);
+            //console.log(data[i].playerShot)
+
             //velocità grafica del proiettile
-            this.room.send("check-the-hit", {x: bullet.x, y: bullet.y})
+            console.log("check-the hit ", i)
+            this.room.send("check-the-hit", {playerShot: data[i].playerShot,x: bullet.x, y: bullet.y})
             await delay(15);
             
 

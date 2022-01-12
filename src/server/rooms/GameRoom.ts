@@ -135,8 +135,6 @@ export class State extends Schema {
     }
   }
 
-  pippo: boolean = true;
-
   update() {
     //console.log("\t\t ----------- Update in room ----------- ")
     const deadPlayers: string[] = [];
@@ -194,11 +192,21 @@ export class State extends Schema {
 
   }
 
+  checkBulletHit(sessionId: string,data: any){
+
+    const player = this.players.get(sessionId)
+    player.bullet.x = data.x
+    player.bullet.y = data.y
+    console.log("shoot from: ", player.name, " coordinates: ",player.bullet.x, "-", player.bullet.y)
+
+  }
+
   
   shot_a_bullet(sessionId: string, shot_Data: any){
+
     console.log("start the shot: ", shot_Data);
 
-    type bullet_coor = {x: number, y: number}
+    type bullet_coor = {playerShot: string,x: number, y: number}
 
     let bullet_coordinates: bullet_coor[] = [];
 
@@ -209,7 +217,7 @@ export class State extends Schema {
     
     player.bullet.direction = Math.atan((shot_Data.reticle_x - player.bullet.x) / (shot_Data.reticle_y - player.bullet.y));
     console.log(player.bullet.direction)
-     // Calculate X and y velocity of bullet to moves it from shooter to target
+    // Calculate X and y velocity of bullet to moves it from shooter to target
     if (shot_Data.reticle_y >= shot_Data.player_y){
       player.bullet.xSpeed = player.bullet.speed * Math.sin(player.bullet.direction);
       player.bullet.ySpeed = player.bullet.speed * Math.cos(player.bullet.direction);
@@ -228,20 +236,9 @@ export class State extends Schema {
       player.bullet.x += player.bullet.xSpeed * delta;
       player.bullet.y += player.bullet.ySpeed * delta;
       player.bullet.born += delta;
-      var coor: bullet_coor = {x: player.bullet.x, y: player.bullet.y}
+      var coor: bullet_coor = {playerShot: sessionId, x: player.bullet.x, y: player.bullet.y}
       bullet_coordinates.push(coor);
-      //console.log(player.bullet.born)
-      //console.log(player.bullet.x, " - ", player.bullet.y)
 
-    }
-
-    // console.log(bullet_coordinates)
-    // console.log(player.bullet.x, " ", player.bullet.y)
-
-    if (player.bullet.born >= 800){ //GITTATA DEL PROIETTILE, VA AVANTI DI 1800 unità
-      player.bullet.active = false;
-      //this.setActive(false);
-      //this.setVisible(false);
     }
 
     return bullet_coordinates;
@@ -271,8 +268,21 @@ export class GameRoom extends Room<State> {
       this.state.movePlayer(client.sessionId, data);
     });
 
+    var i = 0;
     this.onMessage("check-the-hit", (client,data) =>{
-      console.log("shoot from: ",client.sessionId, " coordinates: ",data.x, "-", data.y)
+      // if (i==0){
+      //   clients.push(client.sessionId)
+      //   i++
+      // }
+      //if(this.state.players.())
+      //if(data.playerShot == clients[0]){
+      i = 0
+      console.log("dataaaaa: ", data)
+      console.log("check-the hit ", ++i)
+      this.state.checkBulletHit(client.sessionId,data)
+
+      //}
+      
     })
 
     //on shot
@@ -311,4 +321,5 @@ export class GameRoom extends Room<State> {
   onDispose() {
     console.log("room", this.roomId, "disposing...");
   }
+
 }
