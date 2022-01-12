@@ -290,10 +290,10 @@ export class GameRoom extends Room<State> {
     });
 
 
-    this.onMessage("dataURL", (client, data) => {
-      console.log("data From URL ", data)
-      this.state.players.get(client.sessionId).name = data.userURL;
-    });
+    // this.onMessage("dataURL", (client, data) => {
+    //   console.log("data From URL ", data)
+    //   this.state.players.get(client.sessionId).name = data.userURL;
+    // });
 
     this.setSimulationInterval(() => this.state.update()); //default is 60fps
   }
@@ -303,6 +303,7 @@ export class GameRoom extends Room<State> {
     console.log(options.name, " joined!");
     //create the player
     this.state.createPlayer(client.sessionId);
+    this.state.players.get(client.sessionId).name = options.name;
    
   }
 

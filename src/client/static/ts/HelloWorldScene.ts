@@ -31,8 +31,8 @@ export default class HelloWorldScene extends Phaser.Scene {
 
   init() {
     this.client = new Colyseus.Client("ws://localhost:2567");
-    this.roomID_fromUrl = this.getFromURL('roomId');
-    this.usernameFromUrl = this.getFromURL('username');
+    // this.roomID_fromUrl = this.getFromURL('roomId');
+    // this.usernameFromUrl = this.getFromURL('username');
 
   }
 
@@ -63,11 +63,11 @@ export default class HelloWorldScene extends Phaser.Scene {
     console.log(this.cursors);
 
     //Join room
-    this.room = await this.client.joinOrCreate<State>("game_room"); //if there is one in the room, I have to use joinOrCreate()
+    this.room = await this.client.joinOrCreate<State>("game_room", {name: this.getFromURL('username')}); //if there is one in the room, I have to use joinOrCreate()
 
     console.log("SESSION ID OF GAME: ",this.room.sessionId); //id of connectedplayes, esiste anche room.name
-    console.log(this.usernameFromUrl, " - ", this.roomID_fromUrl)
-    this.room.send('dataURL',{userURL: this.usernameFromUrl, roomID_URL: this.roomID_fromUrl});
+    //console.log(this.usernameFromUrl, " - ", this.roomID_fromUrl)
+    //this.room.send('dataURL',{userURL: this.usernameFromUrl, roomID_URL: this.roomID_fromUrl});
 
 
     //setting the bullets informations as text
