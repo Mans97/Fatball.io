@@ -40,7 +40,7 @@ const app = express();
 // settings uses 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+//app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname+'/../client/static'))
 
 
@@ -67,6 +67,10 @@ app.use('/colyseus', monitor())
 // main Rest API call
 app.get('/', (req,res)=>{
     res.sendFile(path.join(__dirname, '../client/index.html'))
+})
+
+app.get('/game', (req,res)=>{
+    res.sendFile(path.join(__dirname, '../../dist/game.html'))
 })
 
 
