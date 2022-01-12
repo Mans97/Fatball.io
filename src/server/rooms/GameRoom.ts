@@ -147,6 +147,7 @@ export class State extends Schema {
       }
 
       this.players.forEach((collidePlayer, collideSessionId) => {
+
         if (collidePlayer == player) {
           //no collision allowed with the same player (current player)
           return;
@@ -175,14 +176,8 @@ export class State extends Schema {
           }
              
         }
-
-        // console.log('A ',player, ' B ', this.players.get(sessionId))
-        // console.log('Player not sessionId ' ,player.bullet.active,' x speed ', player.bullet.xSpeed)
-        // console.log('Player with sessionId ' ,this.players.get(sessionId).bullet.active)
-
-        /* if (player.bullet)
-          this.update_pos_bullet(sessionId); */
       })
+
 
     });
     
@@ -275,6 +270,10 @@ export class GameRoom extends Room<State> {
       //console.log("Received message from",client.sessionId,":",data);
       this.state.movePlayer(client.sessionId, data);
     });
+
+    this.onMessage("check-the-hit", (client,data) =>{
+      console.log("shoot from: ",client.sessionId, " coordinates: ",data.x, "-", data.y)
+    })
 
     //on shot
     this.onMessage("shot", (client, data) => {

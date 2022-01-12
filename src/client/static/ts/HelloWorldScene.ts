@@ -72,16 +72,6 @@ export default class HelloWorldScene extends Phaser.Scene {
         }) */
     //var bullet: Bullet;
 
-    this.anims.create({
-      key: 'snooze',
-      frames: [
-          { key: 'bullet' ,
-           duration: 50 }
-      ],
-      frameRate: 8,
-      repeat: -1
-    });
-
     function delay(ms: number) {
       return new Promise( resolve => setTimeout(resolve, ms) );
     }
@@ -98,8 +88,9 @@ export default class HelloWorldScene extends Phaser.Scene {
             bullet.setX(data[i].x);
             bullet.setY(data[i].y);
             //velocità grafica del proiettile
+            this.room.send("check-the-hit", {x: bullet.x, y: bullet.y})
             await delay(15);
-            //this.room.send()
+            
 
         }
 
@@ -194,16 +185,6 @@ export default class HelloWorldScene extends Phaser.Scene {
             }
           }
 
-          // if(this.room.state.players[id].bullet){
-          //console.log("bullettt",this.room.state.players[id].bullet)
-            //console.log(this.room.state.players[id].bullet.y)
-          //}
-
-          // if(this.room.state.bullets){
-          //   console.log(this.room.state.bullets.x)
-          //   console.log(this.room.state.bullets.y)
-          // }
-          
         }
         
         //getting the remaining bullets
