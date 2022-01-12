@@ -23,12 +23,17 @@ export default class HelloWorldScene extends Phaser.Scene {
   //avoid to shoot multiple times with a single left button press
   isDown_timeout: Number;
 
+  roomID_fromUrl: any;
+  usernameFromUrl: any;
   constructor() {
     super("hello-world");
   }
 
   init() {
     this.client = new Colyseus.Client("ws://localhost:2567");
+    this.roomID_fromUrl = this.getFromURL('roomId');
+    this.usernameFromUrl = this.getFromURL('username');
+
   }
 
   preload() {
@@ -297,6 +302,14 @@ export default class HelloWorldScene extends Phaser.Scene {
         //this.currentPlayer.y += 5;
       }
     }
+  }
+
+
+  getFromURL(search_string: any){
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const code = urlParams.get(search_string);
+    return code;
   }
 }
 
