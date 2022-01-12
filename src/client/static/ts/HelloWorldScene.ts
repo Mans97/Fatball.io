@@ -19,12 +19,12 @@ export default class HelloWorldScene extends Phaser.Scene {
   bullets_value: number = 0;
   bulletsText: any;
   bullet_object: any;
-
-  //avoid to shoot multiple times with a single left button press
-  isDown_timeout: Number;
+  bullet_is_destroyed: boolean = true;
+  bullet: Bullet;
 
   roomID_fromUrl: any;
   usernameFromUrl: any;
+
   constructor() {
     super("hello-world");
   }
@@ -46,11 +46,7 @@ export default class HelloWorldScene extends Phaser.Scene {
 
   async create() {
 
-    this.isDown_timeout = new Date().getTime();
-
-    var first_click: Boolean = true;
     //setting boards and input keyboards
-    var game = this.game;
     this.pointer = this.input.activePointer;
     var bound_rect = this.add.rectangle(1000, 1000, 6000, 6000); // draw rectangle around bounds
     bound_rect.setStrokeStyle(4000, 0x343a40); // border of 4000 px to the playground, color gray
@@ -74,10 +70,6 @@ export default class HelloWorldScene extends Phaser.Scene {
     this.bulletsText = this.add.text(16, 16, 'score: 0', { fontSize: '32px'});
     //this.bulletsText.setText('Your Bullets: ' + this.bullets_value);
 
-    /* this.room.onMessage('shot', (message: any) => {
-            console.log("emaaaaaa", message)
-        }) */
-    //var bullet: Bullet;
 
     function delay(ms: number) {
       return new Promise( resolve => setTimeout(resolve, ms) );
@@ -85,32 +77,44 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     this.room.onMessage("shoot_coordinates", (data: any) => {
 
-      console.log("ho ricevuto delle coor")
+      if(!this.bullet_is_destroyed){
+        
+        console.log("ho ricevuto delle coor")
+        this.bullet = new Bullet(this,data[0].x,data[0].y);
+        this.add.existing(this.bullet);
 
-      var bullet: Bullet = new Bullet(this,data[0].x,data[0].y);
-      this.add.existing(bullet);
+        (async () => { 
 
-      (async () => { 
+          for(let i in data){
 
-        for(let i in data){
+              this.bullet.setX(data[i].x);
+              this.bullet.setY(data[i].y);
+              //console.log(data[i].playerShot)
+              if(data[i].playerShot == this.room.sessionId){
+              //velocità grafica del proiettile
+                //console.log("check-the hit ", i)
+                this.room.send("check-the-hit", {playerShot: data[i].playerShot,x: this.bullet.x, y: this.bullet.y})
+              }
+              await delay(15);
+          }
+          this.bullet.destroy()
+          console.log(this.bullet)
+          this.bullet_is_destroyed = true
+        })();
 
-            bullet.setX(data[i].x);
-            bullet.setY(data[i].y);
-            //console.log(data[i].playerShot)
-            if(data[i].playerShot == this.room.sessionId){
-            //velocità grafica del proiettile
-              console.log("check-the hit ", i)
-              this.room.send("check-the-hit", {playerShot: data[i].playerShot,x: bullet.x, y: bullet.y})
-            }
-            await delay(15);
-            
-
-        }
-
-        bullet.destroy()
-      })();
+      } 
 
     })
+
+    // Fires bullet from player on left click of mouse
+    this.input.on('pointerdown', (pointer: any, time: any, lastFired: any) => {
+      console.log("shoot", this.currentPlayer.x, " ", this.currentPlayer.y, " ", this.pointer.worldX, " ", this.pointer.worldY);
+      if(this.bullet_is_destroyed)
+        this.bullet_is_destroyed = false
+        this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, 
+          reticle_x: this.pointer.worldX, reticle_y: this.pointer.worldY });
+    }, this);
+
 
     this.room.state.players.onAdd = (player: any, sessionId: string) => {
       //console.log("\tenter in onAdd");
@@ -118,8 +122,6 @@ export default class HelloWorldScene extends Phaser.Scene {
       var style_player: Phaser.GameObjects.Container;
       
       if (player.radius != 10) {
-        console.log('ponyyyyyy ',player)
-        console.log('bullet client ',player.bullet)
         //create the player with text inside
         circle_player = this.add
           .circle(0, 0, player.radius, player.color, 0.6)
@@ -192,12 +194,19 @@ export default class HelloWorldScene extends Phaser.Scene {
 
               if(circle_player){
                 circle_player.setRadius(this.room.state.players[sessionId].radius);
-                console.log("RAGGIO GIOCATORE ",id," :", this.players[id].getData('radius'), " and radius of circle ", circle_player.radius , "radius from backend ", this.room.state.players[id].radius)
+                //console.log("RAGGIO GIOCATORE ",id," :", this.players[id].getData('radius'), " and radius of circle ", circle_player.radius , "radius from backend ", this.room.state.players[id].radius)
               }
-              this.room.state.players[id].radius
             }
           }
+        }
 
+        if(!this.room.state.players[sessionId].is_bullet_active){
+          console.log("bullet not activeeeeeeeee")
+          if(!this.bullet_is_destroyed){
+            this.bullet_is_destroyed = true
+            this.bullet.destroy()
+            //this.bullet_is_destroyed = true
+          }
         }
         
         //getting the remaining bullets
@@ -213,29 +222,7 @@ export default class HelloWorldScene extends Phaser.Scene {
       delete this.players[sessionId];
     };
 
-    // Fires bullet from player on left click of mouse
-    this.input.on('pointerdown', (pointer: any, time: any, lastFired: any) => {
-      console.log("shoot", this.currentPlayer.x, " ", this.currentPlayer.y, " ", this.pointer.worldX, " ", this.pointer.worldY);
-      this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, 
-        reticle_x: this.pointer.worldX, reticle_y: this.pointer.worldY });
-
-      // ************************************************
-      // *************** VECCHIA VERSIONE ***************
-      // Get bullet from bullets group
-      // var bullet = arrow_pointer_Bullets.get().setActive(true).setVisible(true);
-
-      // if (bullet && player.radius > 25){ // when radius is small than 25, then you can't shot
-      //     bullet.fire(arrow_pointer, reticle);
-      //     //remove 5% of the radius for each bullets 
-   
-      //     player.setRadius(player.radius - (player.radius*0.05));            
-      //     console.log(player.radius)
-
-      //     this.physics.add.collider(player2, bullet, enemyHitCallback);
-         
-      // }
-    }, this);
-
+    
     /*this.room.onStateChange((state: any) => {
       console.log("the room state has been updated:", state);
     });*/
@@ -274,19 +261,6 @@ export default class HelloWorldScene extends Phaser.Scene {
     if (this.bulletsText){
       this.bulletsText.setText('Your Bullets: ' + this.bullets_value);
     }
-
-    //var time = new Date().getTime() - Number(this.isDown_timeout);
-    
-    // if (this.pointer.leftButtonDown()){
-    //   this.pointer.downElement()
-    //   if (time > 200){
-    //     //for debugging print i to not overlap all the logs
-    //     console.log("shoot", this.currentPlayer.x, " ", this.currentPlayer.y, " ", this.pointer.worldX, " ", this.pointer.worldY);
-    //     this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, 
-    //       reticle_x: this.pointer.worldX, reticle_y: this.pointer.worldY });
-    //     this.isDown_timeout = new Date().getTime();
-    //   }
-    // }
 
     if (this.cursors) {
 

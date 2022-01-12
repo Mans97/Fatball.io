@@ -17,9 +17,8 @@ export class Bullet{
   direction: number;
   xSpeed: number;
   ySpeed: number;
-  active: boolean;
 
-  constructor(x: number, y: number, active: boolean){
+  constructor(x: number, y: number){
     this.x = x;
     this.y = y;
     this.speed = 1;
@@ -27,7 +26,6 @@ export class Bullet{
     this.direction = 0;
     this.xSpeed = 0;
     this.ySpeed = 0;
-    this.active = active;
   }
 
 }
@@ -38,7 +36,8 @@ export class Player extends Entity {
     this.radius = 20;
     this.minimun_radius = 15;
     this.maximum_radius = 250;
-    this.bullet = new Bullet(0,0,false);
+    this.bullet = new Bullet(0,0);
+    this.is_bullet_active = false;
   }
 }
 
@@ -68,10 +67,10 @@ export class State extends Schema {
         points: 0,
         minimun_radius: 15, //if reach this radius, the player will die
         maximum_radius: 250,
-        bullet: new Bullet(0,0,false)
+        bullet: new Bullet(0,0),
+        is_bullet_active: true
       })
     );
-    //console.log("PLAYERRRRRRRRRRRRRRRRRRRRRR",this.players.get(sessionId))
   }
 
   createFood() {
@@ -133,7 +132,7 @@ export class State extends Schema {
         else player.y += movement.y * 2.5;
       }
     }
-  }
+  } 
 
   update() {
     //console.log("\t\t ----------- Update in room ----------- ")
@@ -174,8 +173,23 @@ export class State extends Schema {
           }
              
         }
-      })
 
+        if(collidePlayer.radius > 10 && Entity.distance(player.bullet, collidePlayer) <= collidePlayer.radius
+           && player.is_bullet_active){
+
+            console.log(collidePlayer.name, "è stato colpitooooo ")
+            //decrease player radius and check if it is dead
+            collidePlayer.radius -= 5
+            if(collidePlayer.radius <= collidePlayer.minimun_radius){
+              collidePlayer.dead = true
+            }
+            //deactivate the bullet
+            player.is_bullet_active = false
+
+        }
+        //this.checkBulletHit(player,sessionId,collidePlayer,collideSessionId)
+
+      })
 
     });
     
@@ -189,15 +203,6 @@ export class State extends Schema {
         console.log("Player removed from game: ", sessionId);
       }
     });
-
-  }
-
-  checkBulletHit(sessionId: string,data: any){
-
-    const player = this.players.get(sessionId)
-    player.bullet.x = data.x
-    player.bullet.y = data.y
-    console.log("shoot from: ", player.name, " coordinates: ",player.bullet.x, "-", player.bullet.y)
 
   }
 
@@ -268,17 +273,15 @@ export class GameRoom extends Room<State> {
       this.state.movePlayer(client.sessionId, data);
     });
 
-    var i = 0;
+    //var i = 0;
     this.onMessage("check-the-hit", (client,data) =>{
-      // if (i==0){
-      //   clients.push(client.sessionId)
-      //   i++
-      // }
-      //if(this.state.players.())
-      //if(data.playerShot == clients[0]){
-      console.log("dataaaaa: ", data)
-      console.log("check-the hit ", ++i)
-      this.state.checkBulletHit(client.sessionId,data)
+
+      //console.log("dataaaaa: ", data)
+      //console.log("check-the hit ", ++i)
+      const player = this.state.players.get(client.sessionId)
+      player.bullet.x = data.x
+      player.bullet.y = data.y
+      //console.log("shoot from: ", player.name, " coordinates: ",player.bullet.x, "-", player.bullet.y)
 
       //}
       
@@ -288,6 +291,9 @@ export class GameRoom extends Room<State> {
     this.onMessage("shot", (client, data) => {
       //console.log("Received message from",client.sessionId,":",data);
       if(this.state.players.get(client.sessionId).your_bullets >= 1){ //check if it has bullets
+
+        this.state.players.get(client.sessionId).is_bullet_active = true
+        //create the bullet trajectory 
         type bullet_coor = {x: number, y: number}
         var bullet_coordinates: bullet_coor[] = []
         bullet_coordinates = this.state.shot_a_bullet(client.sessionId, data);
