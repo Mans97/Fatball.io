@@ -65,7 +65,9 @@ export default class HelloWorldScene extends Phaser.Scene {
     //Join room
     this.room = await this.client.joinOrCreate<State>("game_room"); //if there is one in the room, I have to use joinOrCreate()
 
-    console.log(this.room.sessionId); //id of connectedplayes, esiste anche room.name
+    console.log("SESSION ID OF GAME: ",this.room.sessionId); //id of connectedplayes, esiste anche room.name
+    console.log(this.usernameFromUrl, " - ", this.roomID_fromUrl)
+    this.room.send('dataURL',{userURL: this.usernameFromUrl, roomID_URL: this.roomID_fromUrl});
 
 
     //setting the bullets informations as text
@@ -93,7 +95,7 @@ export default class HelloWorldScene extends Phaser.Scene {
             bullet.setX(data[i].x);
             bullet.setY(data[i].y);
             //velocità grafica del proiettile
-            this.room.send("check-the-hit", {x: bullet.x, y: bullet.y})
+            //this.room.send("check-the-hit", {x: bullet.x, y: bullet.y})
             await delay(15);
             
 

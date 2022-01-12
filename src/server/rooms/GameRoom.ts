@@ -71,7 +71,7 @@ export class State extends Schema {
         bullet: new Bullet(0,0,false)
       })
     );
-    console.log("PLAYERRRRRRRRRRRRRRRRRRRRRR",this.players.get(sessionId))
+    //console.log("PLAYERRRRRRRRRRRRRRRRRRRRRR",this.players.get(sessionId))
   }
 
   createFood() {
@@ -196,7 +196,7 @@ export class State extends Schema {
 
   
   shot_a_bullet(sessionId: string, shot_Data: any){
-    console.log("start the shot: ", shot_Data);
+    //console.log("start the shot: ", shot_Data);
 
     type bullet_coor = {x: number, y: number}
 
@@ -271,9 +271,9 @@ export class GameRoom extends Room<State> {
       this.state.movePlayer(client.sessionId, data);
     });
 
-    this.onMessage("check-the-hit", (client,data) =>{
-      console.log("shoot from: ",client.sessionId, " coordinates: ",data.x, "-", data.y)
-    })
+    // this.onMessage("check-the-hit", (client,data) =>{
+    //   console.log("shoot from: ",client.sessionId, " coordinates: ",data.x, "-", data.y)
+    // })
 
     //on shot
     this.onMessage("shot", (client, data) => {
@@ -287,6 +287,11 @@ export class GameRoom extends Room<State> {
       else {
         console.log("Received message from",client.sessionId,": NO BULLETS, YOU CANNOT SHOT");
       }
+    });
+
+
+    this.onMessage("dataURL", (client, data) => {
+      console.log("data From URL ", data)
     });
 
     this.setSimulationInterval(() => this.state.update()); //default is 60fps
