@@ -33,7 +33,7 @@ export class Bullet{
 export class Player extends Entity {
   constructor() {
     super();
-    this.radius = 200;
+    this.radius = 20;
     this.minimun_radius = 15;
     this.maximum_radius = 250;
     this.bullet = new Bullet(0,0);
@@ -60,7 +60,7 @@ export class State extends Schema {
       new Player().assign({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        radius: 100, //initial radius
+        radius: 20, //initial radius
         color: color,
         border_color: color,
         name: sessionId,
@@ -176,13 +176,13 @@ export class State extends Schema {
         }
 
         if(collidePlayer.radius > 10 && Entity.distance(player.bullet, collidePlayer) <= collidePlayer.radius
-           && player.is_bullet_active){
-             
+           && player.is_bullet_active && player && collidePlayer){
+            
           //deactivate the bullet
           player.is_bullet_active = false
           console.log(collidePlayer.name, "è stato colpitooooo ")
           //decrease player radius and check if it is dead
-          collidePlayer.radius -= 20
+          collidePlayer.radius -= 5
           if(collidePlayer.radius <= collidePlayer.minimun_radius){
             deadPlayers.push(collideSessionId)
           }
@@ -217,7 +217,7 @@ export class State extends Schema {
     var bulletId = generateId()
 
     var player = this.players.get(sessionId)
-    
+
     player.bulletId = bulletId
 
     player.bullet.x = shot_Data.player_x
@@ -284,8 +284,11 @@ export class GameRoom extends Room<State> {
       //console.log("dataaaaa: ", data)
       //console.log("check-the hit ", ++i)
       const player = this.state.players.get(client.sessionId)
-      player.bullet.x = data.x
-      player.bullet.y = data.y
+      if(player){
+        player.bullet.x = data.x
+        player.bullet.y = data.y
+      }
+      
       //console.log("shoot from: ", player.name, " coordinates: ",player.bullet.x, "-", player.bullet.y)
 
       //}
@@ -297,11 +300,14 @@ export class GameRoom extends Room<State> {
       //console.log("Received message from",client.sessionId,":",data);
       if(this.state.players.get(client.sessionId).your_bullets >= 1){ //check if it has bullets
 
+        this.state.players.get(client.sessionId).your_bullets -= 1;
         this.state.players.get(client.sessionId).is_bullet_active = true
+        this.state.players.get(client.sessionId).radius -= 5
         //create the bullet trajectory 
         type bullet_coor = {playerShot: string, x: number, y: number}
         var bullet_coordinates: { bulletId: any, bullet_coordinates: any } = this.state.shot_a_bullet(client.sessionId, data);
         this.broadcast("shoot_coordinates", bullet_coordinates)
+
       } 
       else {
         console.log("Received message from",client.sessionId,": NO BULLETS, YOU CANNOT SHOT");

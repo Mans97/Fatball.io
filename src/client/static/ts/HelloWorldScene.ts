@@ -44,6 +44,7 @@ export default class HelloWorldScene extends Phaser.Scene {
   }
 
   async create() {
+
     type bullet_coor = { playerShot: string,x: number, y: number }
     type bullet_in_game = {bulletId: string, bullet_coordinates: bullet_coor[], bullet: Bullet}
     var bullets: bullet_in_game[] = [];
@@ -90,36 +91,35 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     this.room.onMessage("shoot_coordinates", (data: any) => {
         
-        console.log("ho ricevuto delle coor")
-        
-        
-        var new_bullet = new Bullet(this, data.bullet_coordinates[0].x, data.bullet_coordinates[0].y);
-        
-        var bullet_to_add: bullet_in_game = { bulletId: data.bulletId, bullet_coordinates: data.bullet_coordinates, bullet: new_bullet }
-        
-        this.add.existing(bullet_to_add.bullet);
-        
-        bullets.push(bullet_to_add);
-        
-        (async () => { 
+      console.log("ho ricevuto delle coor")
 
-          for(let i in bullet_to_add.bullet_coordinates){
+      var new_bullet = new Bullet(this, data.bullet_coordinates[0].x, data.bullet_coordinates[0].y);
+      
+      var bullet_to_add: bullet_in_game = { bulletId: data.bulletId, bullet_coordinates: data.bullet_coordinates, bullet: new_bullet }
+      
+      this.add.existing(bullet_to_add.bullet);
+      
+      bullets.push(bullet_to_add);
+      
+      (async () => { 
 
-              bullet_to_add.bullet.setX(bullet_to_add.bullet_coordinates[i].x);
-              bullet_to_add.bullet.setY(bullet_to_add.bullet_coordinates[i].y);
-              //console.log(data[i].playerShot)
-              if(bullet_to_add.bullet_coordinates[i].playerShot == this.room.sessionId){
-              //velocità grafica del proiettile
-                //console.log("check-the hit ", i)
-                this.room.send("check-the-hit", {playerShot: bullet_to_add.bullet_coordinates[i],x: bullet_to_add.bullet.x, y: bullet_to_add.bullet.y})
-              }
-              await delay(15);
-          }
+        for(let i in bullet_to_add.bullet_coordinates){
 
-          bullet_to_add.bullet.destroy()
-          console.log(this.bullet_is_destroyed)
-          this.bullet_is_destroyed = true
-        })();
+            bullet_to_add.bullet.setX(bullet_to_add.bullet_coordinates[i].x);
+            bullet_to_add.bullet.setY(bullet_to_add.bullet_coordinates[i].y);
+            //console.log(data[i].playerShot)
+            if(bullet_to_add.bullet_coordinates[i].playerShot == this.room.sessionId){
+              this.room.send("check-the-hit", {playerShot: bullet_to_add.bullet_coordinates[i],x: bullet_to_add.bullet.x, y: bullet_to_add.bullet.y})
+            }
+            //velocità grafica del proiettile
+            await delay(15);
+        }
+
+        bullet_to_add.bullet.destroy()
+        console.log(this.bullet_is_destroyed)
+        this.bullet_is_destroyed = true
+      })();
+    
 
     })
 
@@ -226,14 +226,9 @@ export default class HelloWorldScene extends Phaser.Scene {
                 bullets[i].bullet.destroy()
               }
             }
-
-            bullets.forEach((bullet, bulletId) =>{
-              
-            })
             //console.log(this.room.state.players[sessionId].is_bullet_active)
               //this.bullet.destroy()
               //this.room.state.players[id].is_bullet_active = true
-              this.bullet_is_destroyed = true
           }
 
         }
