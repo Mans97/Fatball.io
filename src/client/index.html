@@ -184,11 +184,20 @@
             lobby.onMessage('startGame', function (data) {
                 if(data.room == _roomName){
                     console.log('Starting game... redirection to the game page')
-                    window.location.href = "http://localhost:8000/?&roomId=" + data.room + "&username=" + _username
+                    $.ajax({
+                        type: "POST",
+                        url: "/add",
+                        dataType: "json",
+                        success: function (data) {
+                            window.location.href = "http://localhost:8000/?&roomId=" + data.room + "&username=" + _username
+                        },
+                        data: {"name" : data.room}
+                    });
+
                 }
             })
 
-            //manage the case where player can re-entering in the game
+            // manage the case where player can re-entering in the game
             lobby.onMessage('re_entering', function(data){
                 //if(data.room == _roomName){
                     console.log('Re-starting game... redirection to the game page')

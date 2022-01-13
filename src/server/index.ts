@@ -4,16 +4,16 @@ import express from "express";
 import cors from 'cors'
 import { monitor } from "@colyseus/monitor";
 import { GameRoom } from './rooms/GameRoom'
-import {LobbyGameRoom} from './rooms/LobbyGameRoom'
+import { LobbyGameRoom } from './rooms/LobbyGameRoom'
 import { RedisPresence } from "colyseus";
 import path from 'path'
-import {networkInterfaces} from 'os'
+import { networkInterfaces } from 'os'
 
 
 // Public IP exposition
 
-const netInterface : any= networkInterfaces();
-var resultsNet : any = {}
+const netInterface: any = networkInterfaces();
+var resultsNet: any = {}
 
 // filtering nets on the interface of the host system
 for (const name of Object.keys(netInterface)) {
@@ -41,7 +41,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 //app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(__dirname+'/../client/static'))
+app.use(express.static(__dirname + '/../client/static'))
 
 
 //app.use('/static', express.static('public'))
@@ -49,11 +49,11 @@ app.use(express.static(__dirname+'/../client/static'))
 
 // setting Colyseus Server and adding RoomTypes, Redis and other configurations
 const server = http.createServer(app)
-const gameServer = new Server({    
+const gameServer = new Server({
     server, // express
-    presence : new RedisPresence({
-        url : "redis://127.0.0.1:6379/0" // redis for distribution between servers and processes
-    }) 
+    presence: new RedisPresence({
+        url: "redis://127.0.0.1:6379/0" // redis for distribution between servers and processes
+    })
     // TODO: setting proxy, check https://github.com/colyseus/proxy
 });
 
@@ -65,13 +65,20 @@ gameServer.define('lobby_room', LobbyGameRoom)
 app.use('/colyseus', monitor())
 
 // main Rest API call
-app.get('/', (req,res)=>{
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/index.html'))
 })
 
-app.get('/game', (req,res)=>{
+app.get('/game', (req, res) => {
     res.sendFile(path.join(__dirname, '../../dist/game.html'))
 })
+
+app.post('/add', (req, res) => {
+    var roomName = JSON.parse(JSON.stringify(req.body)).name;
+    gameServer.define(roomName, GameRoom)
+    res.status(200).json({})
+})
+
 
 
 gameServer.listen(port)
