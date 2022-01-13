@@ -69,11 +69,11 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     // });
 
-    // this.room.onMessage("access_denied", (data: any) => {
-    //   if(this.room.sessionId == data.id_session){
-    //     window.location.href = "http://localhost:2567/"
-    //   }
-    // });
+    this.room.onMessage("access_denied", (data: any) => {
+      if(this.room.sessionId == data.id_session){
+        window.location.href = "http://localhost:2567/"
+      }
+    });
 
     console.log("SESSION ID OF user: ",this.room.sessionId); //id of connectedplayes, esiste anche room.name
     //console.log(this.usernameFromUrl, " - ", this.roomID_fromUrl)
