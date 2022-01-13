@@ -14,6 +14,7 @@ export class Entity extends Schema {
   @type("float32") maximum_radius!: number;
   bullet: Bullet = new Bullet(0,0);
   @type("boolean") is_bullet_active!: boolean;
+  @type("string") bulletId: string;
 
   dead: boolean = false;
   angle: number = 0;

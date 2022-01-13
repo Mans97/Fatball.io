@@ -184,7 +184,7 @@
             lobby.onMessage('startGame', function (data) {
                 if(data.room == _roomName){
                     console.log('Starting game... redirection to the game page')
-                    window.location.href = "http://192.168.1.73:8000/?&roomId=" + data.room + "&username=" + _username
+                    window.location.href = "http://localhost:8000/?&roomId=" + data.room + "&username=" + _username
                 }
             })
 
@@ -192,7 +192,7 @@
             lobby.onMessage('re_entering', function(data){
                 //if(data.room == _roomName){
                     console.log('Re-starting game... redirection to the game page')
-                    window.location.href = "http://192.168.1.73:8000/?&roomId=" + data.room + "&username=" + data.username
+                    window.location.href = "http://localhost:8000/?&roomId=" + data.room + "&username=" + data.username
                 //}
                
             })

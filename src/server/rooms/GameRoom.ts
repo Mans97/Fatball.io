@@ -38,6 +38,7 @@ export class Player extends Entity {
     this.maximum_radius = 250;
     this.bullet = new Bullet(0,0);
     this.is_bullet_active = true;
+    this.bulletId = "";
   }
 }
 
@@ -216,6 +217,8 @@ export class State extends Schema {
     var bulletId = generateId()
 
     var player = this.players.get(sessionId)
+    
+    player.bulletId = bulletId
 
     player.bullet.x = shot_Data.player_x
     player.bullet.y = shot_Data.player_y
@@ -246,7 +249,7 @@ export class State extends Schema {
 
     }
 
-    return bullet_coordinates;
+    return { bulletId, bullet_coordinates };
 
   }
   
@@ -296,9 +299,8 @@ export class GameRoom extends Room<State> {
 
         this.state.players.get(client.sessionId).is_bullet_active = true
         //create the bullet trajectory 
-        type bullet_coor = {x: number, y: number}
-        var bullet_coordinates: bullet_coor[] = []
-        bullet_coordinates = this.state.shot_a_bullet(client.sessionId, data);
+        type bullet_coor = {playerShot: string, x: number, y: number}
+        var bullet_coordinates: { bulletId: any, bullet_coordinates: any } = this.state.shot_a_bullet(client.sessionId, data);
         this.broadcast("shoot_coordinates", bullet_coordinates)
       } 
       else {

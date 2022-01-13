@@ -44,9 +44,9 @@ export default class HelloWorldScene extends Phaser.Scene {
   }
 
   async create() {
-
-    type bullet_in_game = {bulletId: string, bullet: Bullet}
-    var bullet: bullet_in_game[] = [];
+    type bullet_coor = { playerShot: string,x: number, y: number }
+    type bullet_in_game = {bulletId: string, bullet_coordinates: bullet_coor[], bullet: Bullet}
+    var bullets: bullet_in_game[] = [];
 
     //setting boards and input keyboards
     this.pointer = this.input.activePointer;
@@ -70,7 +70,7 @@ export default class HelloWorldScene extends Phaser.Scene {
 
     this.room.onMessage("access_denied", (data: any) => {
       if(this.room.sessionId == data.id_session){
-        window.location.href = "http://192.168.1.73:2567/"
+        window.location.href = "http://localhost:2567/"
       }
     });
 
@@ -91,25 +91,32 @@ export default class HelloWorldScene extends Phaser.Scene {
     this.room.onMessage("shoot_coordinates", (data: any) => {
         
         console.log("ho ricevuto delle coor")
-        this.bullet = new Bullet(this,data[0].x,data[0].y);
         
-        this.add.existing(this.bullet);
-
+        
+        var new_bullet = new Bullet(this, data.bullet_coordinates[0].x, data.bullet_coordinates[0].y);
+        
+        var bullet_to_add: bullet_in_game = { bulletId: data.bulletId, bullet_coordinates: data.bullet_coordinates, bullet: new_bullet }
+        
+        this.add.existing(bullet_to_add.bullet);
+        
+        bullets.push(bullet_to_add);
+        
         (async () => { 
 
-          for(let i in data){
+          for(let i in bullet_to_add.bullet_coordinates){
 
-              this.bullet.setX(data[i].x);
-              this.bullet.setY(data[i].y);
+              bullet_to_add.bullet.setX(bullet_to_add.bullet_coordinates[i].x);
+              bullet_to_add.bullet.setY(bullet_to_add.bullet_coordinates[i].y);
               //console.log(data[i].playerShot)
-              if(data[i].playerShot == this.room.sessionId){
+              if(bullet_to_add.bullet_coordinates[i].playerShot == this.room.sessionId){
               //velocità grafica del proiettile
                 //console.log("check-the hit ", i)
-                this.room.send("check-the-hit", {playerShot: data[i].playerShot,x: this.bullet.x, y: this.bullet.y})
+                this.room.send("check-the-hit", {playerShot: bullet_to_add.bullet_coordinates[i],x: bullet_to_add.bullet.x, y: bullet_to_add.bullet.y})
               }
               await delay(15);
           }
-          this.bullet.destroy()
+
+          bullet_to_add.bullet.destroy()
           console.log(this.bullet_is_destroyed)
           this.bullet_is_destroyed = true
         })();
@@ -212,12 +219,23 @@ export default class HelloWorldScene extends Phaser.Scene {
               }
             }
           }
-          if(this.room.state.players[id].is_bullet_active){
+
+          if(!this.room.state.players[id].is_bullet_active){
+            for(let i = 0; i < bullets.length; i++){
+              if(this.room.state.players[id].bulletId == bullets[i].bulletId){
+                bullets[i].bullet.destroy()
+              }
+            }
+
+            bullets.forEach((bullet, bulletId) =>{
+              
+            })
             //console.log(this.room.state.players[sessionId].is_bullet_active)
-              this.bullet.destroy()
-              this.room.state.players[id].is_bullet_active = true
+              //this.bullet.destroy()
+              //this.room.state.players[id].is_bullet_active = true
               this.bullet_is_destroyed = true
           }
+
         }
 
         //console.log(this.room.state.players[sessionId].is_bullet_active)
