@@ -33,7 +33,7 @@ export class Bullet{
 export class Player extends Entity {
   constructor() {
     super();
-    this.radius = 20;
+    this.radius = 200;
     this.minimun_radius = 15;
     this.maximum_radius = 250;
     this.bullet = new Bullet(0,0);
@@ -59,7 +59,7 @@ export class State extends Schema {
       new Player().assign({
         x: Math.random() * WORLD_SIZE,
         y: Math.random() * WORLD_SIZE,
-        radius: 20, //initial radius
+        radius: 100, //initial radius
         color: color,
         border_color: color,
         name: sessionId,
@@ -173,17 +173,18 @@ export class State extends Schema {
           }
 
         }
+
         if(collidePlayer.radius > 10 && Entity.distance(player.bullet, collidePlayer) <= collidePlayer.radius
            && player.is_bullet_active){
-            //deactivate the bullet
-            player.is_bullet_active = false
-            console.log(collidePlayer.name, "è stato colpitooooo ")
-            //decrease player radius and check if it is dead
-            collidePlayer.radius -= 5
-            if(collidePlayer.radius <= collidePlayer.minimun_radius){
-              collidePlayer.dead = true
-            }
-                
+             
+          //deactivate the bullet
+          player.is_bullet_active = false
+          console.log(collidePlayer.name, "è stato colpitooooo ")
+          //decrease player radius and check if it is dead
+          collidePlayer.radius -= 20
+          if(collidePlayer.radius <= collidePlayer.minimun_radius){
+            deadPlayers.push(collideSessionId)
+          }
         }
 
       })
@@ -211,6 +212,8 @@ export class State extends Schema {
     type bullet_coor = {playerShot: string,x: number, y: number}
 
     let bullet_coordinates: bullet_coor[] = [];
+
+    var bulletId = generateId()
 
     var player = this.players.get(sessionId)
 
@@ -271,7 +274,7 @@ export class GameRoom extends Room<State> {
     });
 
     //var i = 0;
-    this.onMessage("check-the-hit", (client,data) =>{
+    this.onMessage("check-the-hit", (client, data) =>{
 
       //console.log("dataaaaa: ", data)
       //console.log("check-the hit ", ++i)

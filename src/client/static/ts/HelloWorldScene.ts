@@ -20,7 +20,6 @@ export default class HelloWorldScene extends Phaser.Scene {
   bulletsText: any;
   bullet_object: any;
   bullet_is_destroyed: boolean = true;
-  bullet: Bullet;
 
   roomID_fromUrl: any;
   usernameFromUrl: any;
@@ -45,6 +44,9 @@ export default class HelloWorldScene extends Phaser.Scene {
   }
 
   async create() {
+
+    type bullet_in_game = {bulletId: string, bullet: Bullet}
+    var bullet: bullet_in_game[] = [];
 
     //setting boards and input keyboards
     this.pointer = this.input.activePointer;
@@ -76,11 +78,10 @@ export default class HelloWorldScene extends Phaser.Scene {
     }
 
     this.room.onMessage("shoot_coordinates", (data: any) => {
-
-      if(!this.bullet_is_destroyed){
         
         console.log("ho ricevuto delle coor")
         this.bullet = new Bullet(this,data[0].x,data[0].y);
+        
         this.add.existing(this.bullet);
 
         (async () => { 
@@ -98,11 +99,9 @@ export default class HelloWorldScene extends Phaser.Scene {
               await delay(15);
           }
           this.bullet.destroy()
-          //console.log(this.bullet)
+          console.log(this.bullet_is_destroyed)
           this.bullet_is_destroyed = true
         })();
-
-      } 
 
     })
 
@@ -199,18 +198,16 @@ export default class HelloWorldScene extends Phaser.Scene {
               }
             }
           }
-        }
-
-        console.log(this.room.state.players[sessionId].is_bullet_active)
-        if(!this.room.state.players[sessionId].is_bullet_active){
-          console.log(this.room.state.players[sessionId].is_bullet_active)
-          if(!this.bullet_is_destroyed){
-            this.bullet.destroy()
-            console.log("bullet not activeeeeeeeee")
-            this.bullet_is_destroyed = true
-            //this.bullet_is_destroyed = true
+          if(this.room.state.players[id].is_bullet_active){
+            //console.log(this.room.state.players[sessionId].is_bullet_active)
+              this.bullet.destroy()
+              this.room.state.players[id].is_bullet_active = true
+              this.bullet_is_destroyed = true
           }
         }
+
+        //console.log(this.room.state.players[sessionId].is_bullet_active)
+        
         
 
         
