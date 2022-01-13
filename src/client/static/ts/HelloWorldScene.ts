@@ -62,7 +62,7 @@ export default class HelloWorldScene extends Phaser.Scene {
     console.log(this.cursors);
 
     //Join room
-    this.room = await this.client.joinOrCreate<State>("game_room", {name: this.getFromURL('username'), room_name: this.getFromURL('roomId')}); //if there is one in the room, I have to use joinOrCreate()
+    this.room = await this.client.joinOrCreate<State>(this.getFromURL('roomId'), {name: this.getFromURL('username'), room_name: this.getFromURL('roomId')}); //if there is one in the room, I have to use joinOrCreate()
     // this.room.onLeave((code: any) => {
     //   console.log("Client left the room. Code:", code);
     //   //window.location.href = "http://192.168.1.73:8000/"
