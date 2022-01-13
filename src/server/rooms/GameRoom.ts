@@ -253,7 +253,9 @@ export class State extends Schema {
 }
 
 export class GameRoom extends Room<State> {
+  // onAuth(client: Client, options: any, request: any){
 
+  // }
   onCreate(options: any) {
     this.setState(new State());
     //add food
@@ -304,6 +306,27 @@ export class GameRoom extends Room<State> {
       }
     });
 
+    this.onMessage("exit", async (client, data) => {
+      const user_exit = await this.presence.smembers(options.room_name+"@"+options.name)
+     console.log("Sta uscendo: ", user_exit)
+      console.log("sono qui")
+      //resetting the field in redis sayng that user is no more in the room (so the field is setted to FALSE)
+      // this.presence.srem(data.room_name+"@"+data.name, await this.presence.smembers(data.room_name+"@"+data.name));
+      // this.presence.srem(data.room_name,data.name);
+        
+      //console.log(this.presence.del(data.room_name));
+      console.log(await this.presence.del(data.room_name+"@"+data.name));
+
+      this.presence.sadd(options.room_name+"@"+options.name,"false")
+      //const user_exit2 = await this.presence.smembers(options.room_name)
+
+      const user_exit3 = await this.presence.smembers(options.room_name+"@"+options.name)
+
+      //console.log("chi è rimasto field 1? ",user_exit2)
+      console.log("chi è rimasto field 2? ",user_exit3)
+    });
+
+
 
     // this.onMessage("dataURL", (client, data) => {
     //   console.log("data From URL ", data)
@@ -313,25 +336,62 @@ export class GameRoom extends Room<State> {
     this.setSimulationInterval(() => this.state.update()); //default is 60fps
   }
 
-  onJoin(client: Client, options: any) {
-    console.log(client.sessionId, " joined!");
-    console.log(options.name, " joined!");
-    //create the player
-    this.state.createPlayer(client.sessionId);
-    this.state.players.get(client.sessionId).name = options.name;
+  async onJoin(client: Client, options: any) {
+    console.log(options.room_name, " - ", options.name)
+
+    const user_in_game = await this.presence.smembers(options.room_name+"@"+options.name)
+    console.log(user_in_game)
+    if (user_in_game.includes("true")){
+      console.log("The player is already in the game");
+      //this client is not allowed to enter
+      client.send("access_denied",{message: "You cannot enter", id_session: client.sessionId});
+
+    }else if(user_in_game.includes("false")){ //else is false, so the user is not in the lobby/redis
+      //insert the player in redis, using the room_id of game as key
+      this.presence.srem(options.room_name+"@"+options.name,"false")
+      this.presence.sadd(options.room_name+"@"+options.name,"true")
+      console.log("new user created.")
+
+      // creating the player and setting is name
+      console.log(client.sessionId, " joined!");
+      console.log(options.name, " joined!");
+      console.log("Room name ", options.room_name);
+      //create the player
+      this.state.createPlayer(client.sessionId);
+      this.state.players.get(client.sessionId).name = options.name;
+
+    }else{//user does not exist
+      console.log("The player does not exist");
+      //this client is not allowed to enter
+      client.send("access_denied",{message: "You cannot enter", id_session: client.sessionId});
+
+    }
+
+  
    
   }
 
   onLeave(client: Client, consented: boolean) {
-    console.log(client.sessionId, "left!");
+    console.log(client.sessionId, "left! ");
     const player = this.state.players.get(client.sessionId);
     if (player) {
       player.dead = true;
     }
+    //this.presence.srem(options.room_name+"@"+options.name,await this.presence.smembers(options.room_name+"@"+options.name))
+
+
+
+
   }
 
   onDispose() {
     console.log("room", this.roomId, "disposing...");
+    //TODO: remove player and room id and flag from redis
+    //const user_in_game = await this.presence.smembers(options.room_name+"@"+options.name)
+
+
+    //this.presence.sadd(options.room_name+"@"+options.name,"true")
+    
   }
 
 }

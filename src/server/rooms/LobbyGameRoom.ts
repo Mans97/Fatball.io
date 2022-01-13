@@ -30,15 +30,30 @@ export class LobbyGameRoom extends LobbyRoom {
     }
 
     // event-driven when the client is joined to the lobby
-    onJoin(client: Client, options : any) {
+    async onJoin(client: Client, options : any) {
         super.onJoin(client, options);
         this.lobbyName = options.roomName;
         client.userData = {username : options.username, lobbyName : options.roomName} // distributed data
         console.log('LOBBY: Joining of player ', client.userData.username, " in the room: ", client.userData.lobbyName)
-        // distributed
-        this.addConnection(client) // adding connection to Redis
-        this.broadcast("players", {counter : this.counter + 1, room : client.userData.lobbyName}) // sending the counter for the min. players required policy
-        this.broadcast("+", { players : this.players, room : client.userData.lobbyName}) // adding username in the list
+        
+        //check if user has started a game session before (for this specific game)
+        /** enter again value is FALSE if the player was in the game before. Is true if the player is in the game now. */
+        var enter_again = await this.presence.smembers(client.userData.lobbyName+"@"+client.userData.username) //if the game start now, this redis field is empty
+        console.log("ENTER_AGAIN IS ", enter_again);
+        if ( enter_again.includes('false') ){ //re-entering in the game
+            console.log("pony sono qui");
+            client.send("re_entering", {message:"Ok", room: client.userData.LobbyName, username: client.userData.username});
+        }else if(!enter_again.includes('false') && (!enter_again.includes('true'))){  // so is empty because the game is not started yet. The player can enter
+            console.log("\t MESSAGE: Enter again includes is empty: THIS IS THE FIRST TIME THAT YOU ENTER IN THIS GAME")
+            // distributed
+            this.addConnection(client) // adding connection to Redis
+            this.broadcast("players", {counter : this.counter + 1, room : client.userData.lobbyName}) // sending the counter for the min. players required policy
+            this.broadcast("+", { players : this.players, room : client.userData.lobbyName}) // adding username in the list
+        
+        }else{ //enter again contains true, so the player is already in the game
+            console.log("\t\nERROR: enter_again contains true. This player is already in the game\n")
+        }
+        
         
     }
 
@@ -64,13 +79,27 @@ export class LobbyGameRoom extends LobbyRoom {
     private async addConnection(client : Client){
         // current users assigned to the topic of the room
         var currentUsers = await this.presence.smembers(client.userData.lobbyName)
+
         // getting the username from the client user data
         const username = client.userData.username
-        if(!currentUsers.includes(username)){
+
+
+        /**
+         * If enter_again is empty: you can NOT enter;
+         * if enter_again contains 'true': you can NOT enter;
+         * if username is already in redis field, you can NOT enter;
+         *
+         * if username is not in redis field, you can enter;
+         *          OR
+         * if enter_again is false: you can enter (in this case username is FOR SURE in redis field)
+         */
+        if(!currentUsers.includes(username)){   // || enter_again.includes('false')
             // the current user is not in the topic, must be joined
             console.log('REDIS: Adding ', username, ' from the key ', client.userData.lobbyName, ' room')
             // adding the user to the room
             this.presence.sadd(client.userData.lobbyName, username)
+            this.presence.sadd(client.userData.lobbyName+"@"+username, "false") //roomname@username
+
             currentUsers = await this.presence.smembers(client.userData.lobbyName)
             this.counter = currentUsers.length // updating of the number of users
             this.players = currentUsers // updating of the user list

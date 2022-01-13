@@ -61,7 +61,18 @@ export default class HelloWorldScene extends Phaser.Scene {
     console.log(this.cursors);
 
     //Join room
-    this.room = await this.client.joinOrCreate<State>("game_room", {name: this.getFromURL('username')}); //if there is one in the room, I have to use joinOrCreate()
+    this.room = await this.client.joinOrCreate<State>("game_room", {name: this.getFromURL('username'), room_name: this.getFromURL('roomId')}); //if there is one in the room, I have to use joinOrCreate()
+    // this.room.onLeave((code: any) => {
+    //   console.log("Client left the room. Code:", code);
+    //   //window.location.href = "http://192.168.1.73:8000/"
+
+    // });
+
+    this.room.onMessage("access_denied", (data: any) => {
+      if(this.room.sessionId == data.id_session){
+        window.location.href = "http://192.168.1.73:2567/"
+      }
+    });
 
     console.log("SESSION ID OF user: ",this.room.sessionId); //id of connectedplayes, esiste anche room.name
     //console.log(this.usernameFromUrl, " - ", this.roomID_fromUrl)
@@ -121,6 +132,9 @@ export default class HelloWorldScene extends Phaser.Scene {
       var circle_player: Phaser.GameObjects.Arc;
       var style_player: Phaser.GameObjects.Container;
       
+      
+      // PROVENIENTE DA MERGE CON MICHELE: console.log('bullet client ',player.bullet)
+
       if (player.radius != 10) {
         //create the player with text inside
         circle_player = this.add
@@ -220,44 +234,32 @@ export default class HelloWorldScene extends Phaser.Scene {
     };
 
     this.room.state.players.onRemove = (_: any, sessionId: any) => {
+      //tell the client that he has to update redis field for this user
+      this.room.send("exit",{name: this.getFromURL('username'), room_name: this.getFromURL('roomId')});
       console.log("\tREMOVE", sessionId);
       this.players[sessionId].destroy();
       delete this.players[sessionId];
     };
+
+/* versione michele vecchia
+    // Fires bullet from player on left click of mouse
+    this.input.on('pointerdown', (pointer: any, time: any, lastFired: any) => {
+      console.log("shoot", this.currentPlayer.x, " ", this.currentPlayer.y, " ", this.pointer.worldX, " ", this.pointer.worldY);
+      this.room.send("shot", { player_x: this.currentPlayer.x, player_y: this.currentPlayer.y, 
+        reticle_x: this.pointer.worldX, reticle_y: this.pointer.worldY });
+    }, this);*/
+
+  
 
     
     /*this.room.onStateChange((state: any) => {
       console.log("the room state has been updated:", state);
     });*/
 
-    //message coming from the server
-    /* this.room.onMessage('shot', (message: any) => {
-            console.log("emaaaaaa", message)
-        }) */
-
-    /*this.input.keyboard.on('keydown', (evt: KeyboardEvent) =>{
-            this.room.send('keydown', evt.key) //lo mando a Colysius server
-        })*/
   }
 
 
-  //VECCHIO BULLET
-  /*function enemyHitCallback(enemyHit, bulletHit){
-    // Reduce health of enemy
-      if (bulletHit.active === true && enemyHit.active === true){
-        // Destroy bullet
-        bulletHit.setActive(false).setVisible(false);
-        // QUESTO DEVE ACCADERE SUBITO 
-        // ---> enemyHit.setActive(false).setVisible(false);
-        enemyHit.setRadius(enemyHit.radius - (enemyHit.radius*0.05)) //reduce of 5% his radius
-        //increase radius of player who is shotting
-        return true; //hitted
-      }
-    }
 
-    GESTIRE RESPOWN DEL GIOCATORE*/
-
-  //to debugging the pointer.isDown in update() function
 
   async update() {
     //setting the bullet text

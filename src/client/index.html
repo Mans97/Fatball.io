@@ -183,10 +183,18 @@
             // One of the player started the game
             lobby.onMessage('startGame', function (data) {
                 if(data.room == _roomName){
-                console.log("POADOPOPADOPKADSOKLNADSJKLNADSOHJKLHJO")
-                console.log('Starting game... redirection to the game page')
-                window.location.href = "http://192.168.1.73:8000/?&roomId=" + data.room + "&username=" + _username
+                    console.log('Starting game... redirection to the game page')
+                    window.location.href = "http://192.168.1.73:8000/?&roomId=" + data.room + "&username=" + _username
                 }
+            })
+
+            //manage the case where player can re-entering in the game
+            lobby.onMessage('re_entering', function(data){
+                //if(data.room == _roomName){
+                    console.log('Re-starting game... redirection to the game page')
+                    window.location.href = "http://192.168.1.73:8000/?&roomId=" + data.room + "&username=" + data.username
+                //}
+               
             })
 
             lobby.onLeave((client) => {
