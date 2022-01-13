@@ -184,16 +184,7 @@
             lobby.onMessage('startGame', function (data) {
                 if(data.room == _roomName){
                     console.log('Starting game... redirection to the game page')
-                    $.ajax({
-                        type: "POST",
-                        url: "/add",
-                        dataType: "json",
-                        success: function (data) {
-                            window.location.href = "http://localhost:8000/?&roomId=" + data.room + "&username=" + _username
-                        },
-                        data: {"name" : data.room}
-                    });
-
+                    window.location.href = "http://localhost:8000/?&roomId=" + data.room + "&username=" + _username
                 }
             })
 
@@ -263,7 +254,10 @@
                 buttonGame.innerHTML = "Start"
                 buttonGame.onclick = function () {
                     console.log('Game is starting!')
-
+                    console.log(_roomName)
+                    $.post("/add", { name: _roomName},function(data){
+                        console.log("AAAAAAAAAAAAAAA")
+                    })
                     lobby.send("initGame", {})
 
 

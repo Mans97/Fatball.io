@@ -8,6 +8,8 @@ import { LobbyGameRoom } from './rooms/LobbyGameRoom'
 import { RedisPresence } from "colyseus";
 import path from 'path'
 import { networkInterfaces } from 'os'
+import bodyParser from "body-parser";
+
 
 
 // Public IP exposition
@@ -42,8 +44,8 @@ app.use(cors());
 app.use(express.json());
 //app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname + '/../client/static'))
-
-
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 //app.use('/static', express.static('public'))
 
 
@@ -74,7 +76,8 @@ app.get('/game', (req, res) => {
 })
 
 app.post('/add', (req, res) => {
-    var roomName = JSON.parse(JSON.stringify(req.body)).name;
+    var roomName = req.body.name;
+    console.log(roomName," roooooooooooooooooooommmmm")
     gameServer.define(roomName, GameRoom)
     res.status(200).json({})
 })
